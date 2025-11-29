@@ -1,0 +1,77 @@
+.callback-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f6f9fc 0%, #edf2f7 100%);
+  padding: 20px;
+}
+
+.callback-content {
+  background: white;
+  border-radius: 12px;
+  padding: 48px;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  max-width: 400px;
+  width: 100%;
+}
+
+.callback-spinner {
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: center;
+}
+
+.callback-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #202223;
+  margin: 0 0 12px 0;
+}
+
+.callback-message {
+  color: #6d7175;
+  font-size: 16px;
+  margin: 0 0 24px 0;
+  line-height: 1.5;
+}
+
+.callback-error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 20px;
+  margin-top: 20px;
+  
+  mat-icon {
+    color: #dc2626;
+    font-size: 24px;
+    margin-bottom: 8px;
+  }
+  
+  p {
+    color: #dc2626;
+    margin: 8px 0;
+  }
+}
+
+.retry-button {
+  background: #008060;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 12px;
+  
+  &:hover {
+    background: #006d4e;
+  }
+}
+
+::ng-deep .mat-mdc-progress-spinner {
+  --mdc-circular-progress-active-indicator-color: #008060;
+}

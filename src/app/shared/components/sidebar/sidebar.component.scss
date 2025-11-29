@@ -1,0 +1,294 @@
+// Sidebar Component Styles - Retail Pro Admin Theme
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 240px;
+  height: 100vh;
+  background: #f1f1f1;
+  border-right: 1px solid #e1e1e1;
+  display: flex;
+  flex-direction: column;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1000;
+  overflow: hidden;
+
+  &--collapsed {
+    width: 56px;
+    
+    .sidebar__brand-text {
+      opacity: 0;
+    }
+    
+    .sidebar__nav-text {
+      opacity: 0;
+    }
+    
+    .sidebar__nav-arrow {
+      opacity: 0;
+    }
+    
+    .sidebar__submenu {
+      display: none;
+    }
+    
+    .sidebar__section-title {
+      opacity: 0;
+    }
+    
+    .sidebar__channel-count {
+      opacity: 0;
+    }
+  }
+
+  // Header Section
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px;
+    border-bottom: 1px solid #e1e1e1;
+    min-height: 56px;
+  }
+
+  &__brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    
+    &-icon {
+      width: 32px;
+      height: 32px;
+      background: #008060;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+    
+    &-text {
+      font-weight: 600;
+      color: #202223;
+      font-size: 16px;
+      transition: opacity 0.2s ease;
+    }
+  }
+
+  &__toggle {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    background: transparent;
+    border: none;
+    color: #6d7175;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background: rgba(0, 128, 96, 0.1);
+      color: #008060;
+    }
+    
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  // Navigation
+  &__nav {
+    flex: 1;
+    padding: 8px 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    
+    &--sales-channels {
+      flex: none;
+      border-top: 1px solid #e1e1e1;
+      padding: 8px 0;
+    }
+    
+    &-list {
+      list-style: none;
+      margin: 0;
+      padding: 0 8px;
+    }
+    
+    &-item {
+      margin-bottom: 2px;
+      
+      &--has-children {
+        .sidebar__nav-link {
+          cursor: pointer;
+        }
+      }
+    }
+    
+    &-link {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 8px;
+      border-radius: 8px;
+      color: #202223;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      min-height: 32px;
+      
+      &:hover {
+        background: rgba(0, 128, 96, 0.08);
+      }
+      
+      &--active {
+        background: #008060;
+        color: white;
+        
+        .sidebar__nav-icon {
+          color: white;
+        }
+      }
+      
+      &--expanded {
+        background: rgba(0, 128, 96, 0.08);
+      }
+      
+      &-content {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex: 1;
+        min-width: 0;
+      }
+    }
+    
+    &-icon {
+      width: 20px;
+      height: 20px;
+      font-size: 20px;
+      color: #6d7175;
+      flex-shrink: 0;
+    }
+    
+    &-text {
+      white-space: nowrap;
+      transition: opacity 0.2s ease;
+      flex: 1;
+      min-width: 0;
+    }
+    
+    &-arrow {
+      width: 16px;
+      height: 16px;
+      font-size: 16px;
+      color: #6d7175;
+      transition: opacity 0.2s ease;
+    }
+  }
+
+  // Submenu
+  &__submenu {
+    list-style: none;
+    margin: 4px 0 0 0;
+    padding: 0;
+    
+    &-item {
+      margin-bottom: 1px;
+    }
+    
+    &-link {
+      display: block;
+      padding: 4px 8px 4px 40px;
+      color: #6d7175;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 400;
+      border-radius: 6px;
+      transition: all 0.15s ease;
+      
+      &:hover {
+        background: rgba(0, 128, 96, 0.08);
+        color: #202223;
+      }
+      
+      &--active {
+        background: rgba(0, 128, 96, 0.15);
+        color: #008060;
+        font-weight: 500;
+      }
+    }
+  }
+
+  // Section divider
+  &__divider {
+    padding: 16px 16px 8px;
+    border-top: 1px solid #e1e1e1;
+  }
+
+  &__section-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: #6d7175;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: opacity 0.2s ease;
+  }
+
+  // Channel count badge
+  &__channel-count {
+    background: #e3e3e3;
+    color: #202223;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 10px;
+    min-width: 18px;
+    text-align: center;
+    transition: opacity 0.2s ease;
+  }
+
+  // Settings section
+  &__settings {
+    padding: 8px;
+    border-top: 1px solid #e1e1e1;
+    
+    .sidebar__nav-link {
+      cursor: pointer;
+      
+      &:hover {
+        background: rgba(0, 128, 96, 0.08);
+      }
+    }
+  }
+}
+
+// Hidden Scrollbar styling - maintains functionality
+.sidebar__nav {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  
+  &::-webkit-scrollbar {
+    display: none; /* Hide scrollbar for WebKit browsers */
+    width: 0;
+    height: 0;
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+    
+    &--mobile-open {
+      transform: translateX(0);
+    }
+  }
+}

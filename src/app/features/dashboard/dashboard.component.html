@@ -1,0 +1,283 @@
+<div class="dashboard-container">
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>Loading your dashboard...</p>
+  </div>
+
+  <!-- Dashboard Content -->
+  <div *ngIf="!isLoading && dashboardData" class="dashboard-content">
+    <!-- Setup Alert -->
+    <div *ngIf="dashboardData.tenant.requiresSetup" class="setup-alert">
+      <mat-card class="alert-card">
+        <mat-card-content>
+          <div class="alert-content">
+            <div class="alert-text">
+              <h3>
+                <mat-icon>settings</mat-icon>
+                Complete Your Setup
+              </h3>
+              <p>Complete your business profile to unlock all features. Missing: {{ dashboardData.tenant.missingFields.join(', ') }}</p>
+            </div>
+            <button mat-raised-button color="primary" routerLink="/tenant-setup">
+              Complete Setup
+            </button>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Subscription Alert -->
+    <div *ngIf="dashboardData.tenant.isTrialPeriod && dashboardData.tenant.daysUntilExpiry <= 7" class="subscription-alert">
+      <mat-card class="alert-card info">
+        <mat-card-content>
+          <div class="alert-content">
+            <mat-icon class="alert-icon">schedule</mat-icon>
+            <div class="alert-text">
+              <h3>Trial Ending Soon</h3>
+              <p>Your free trial ends in {{ dashboardData.tenant.daysUntilExpiry }} days. Subscribe to continue using all features.</p>
+            </div>
+            <button mat-raised-button color="accent">Subscribe Now</button>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Initial Setup Guidance -->
+    <div *ngIf="isInitialSetupNeeded()" class="setup-guidance-section">
+      <mat-card class="setup-card">
+        <mat-card-header>
+          <div class="setup-header">
+            <mat-card-title>
+              <mat-icon class="setup-icon">rocket_launch</mat-icon>
+              <span>Let's Get You Started!</span>
+            </mat-card-title>
+            <mat-card-subtitle>{{ getNextStepMessage() }}</mat-card-subtitle>
+          </div>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="setup-steps">
+            <div class="setup-step" [class.completed]="hasProducts()" [class.current]="!hasProducts()">
+              <div class="step-icon">
+                <mat-icon *ngIf="hasProducts(); else productIcon">check_circle</mat-icon>
+                <ng-template #productIcon><mat-icon>inventory_2</mat-icon></ng-template>
+              </div>
+              <div class="step-content">
+                <h4>Add Your First Products</h4>
+                <p>Start by adding products to your inventory</p>
+                <button 
+                  *ngIf="!hasProducts()" 
+                  mat-raised-button 
+                  color="primary" 
+                  (click)="navigateToInventory()">
+                  <mat-icon>add</mat-icon>
+                  Add Products
+                </button>
+              </div>
+            </div>
+
+            <div class="setup-step" [class.completed]="hasCustomers()" [class.current]="hasProducts() && !hasCustomers()" [class.disabled]="!hasProducts()">
+              <div class="step-icon">
+                <mat-icon *ngIf="hasCustomers(); else customerIcon">check_circle</mat-icon>
+                <ng-template #customerIcon><mat-icon>people</mat-icon></ng-template>
+              </div>
+              <div class="step-content">
+                <h4>Add Customers</h4>
+                <p>Build your customer database for better tracking</p>
+                <button 
+                  *ngIf="hasProducts() && !hasCustomers()" 
+                  mat-raised-button 
+                  color="primary" 
+                  (click)="navigateToCustomers()">
+                  <mat-icon>add</mat-icon>
+                  Add Customers
+                </button>
+                <span *ngIf="!hasProducts()" class="step-disabled">Add products first</span>
+              </div>
+            </div>
+
+            <div class="setup-step" [class.completed]="hasSales()" [class.current]="hasProducts() && hasCustomers() && !hasSales()" [class.disabled]="!hasProducts() || !hasCustomers()">
+              <div class="step-icon">
+                <mat-icon *ngIf="hasSales(); else salesIcon">check_circle</mat-icon>
+                <ng-template #salesIcon><mat-icon>point_of_sale</mat-icon></ng-template>
+              </div>
+              <div class="step-content">
+                <h4>Make Your First Sale</h4>
+                <p>Start processing sales and track revenue</p>
+                <button 
+                  *ngIf="hasProducts() && hasCustomers() && !hasSales()" 
+                  mat-raised-button 
+                  color="primary">
+                  <mat-icon>add_shopping_cart</mat-icon>
+                  Create Sale
+                </button>
+                <span *ngIf="!hasProducts() || !hasCustomers()" class="step-disabled">Complete previous steps first</span>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="hasProducts() && hasCustomers() && hasSales()" class="setup-complete">
+            <mat-icon class="success-icon">celebration</mat-icon>
+            <h3>Congratulations! 🎉</h3>
+            <p>Your business is up and running! You can now explore all the features and grow your business.</p>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Welcome Header with Stats -->
+    <div class="welcome-stats-section">
+      <div class="welcome-header">
+        <h1>Welcome back, {{ dashboardData.tenant.name || 'User' }}!</h1>
+        <p>Here's what's happening with your inventory today</p>
+        <mat-chip-listbox *ngIf="dashboardData.tenant.isTrialPeriod" class="trial-chip">
+          <mat-chip color="accent" selected>
+            <mat-icon matChipAvatar>schedule</mat-icon>
+            Trial: {{ dashboardData.tenant.daysUntilExpiry }} days left
+          </mat-chip>
+        </mat-chip-listbox>
+      </div>
+      
+      <!-- Quick Stats Cards -->
+      <div class="stats-grid">
+        <mat-card class="stat-card">
+          <mat-card-content>
+            <div class="stat-content">
+              <div class="stat-icon">
+                <mat-icon>inventory_2</mat-icon>
+              </div>
+              <div class="stat-details">
+                <h3>Total Products</h3>
+                <p class="stat-number">{{ dashboardData.metrics.totalProducts | number }}</p>
+                <span class="stat-change positive">Active inventory</span>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="stat-card">
+          <mat-card-content>
+            <div class="stat-content">
+              <div class="stat-icon">
+                <mat-icon>trending_up</mat-icon>
+              </div>
+              <div class="stat-details">
+                <h3>Total Sales</h3>
+                <p class="stat-number">${{ dashboardData.metrics.totalSales | number:'1.2-2' }}</p>
+                <span class="stat-change positive">All time sales</span>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="stat-card">
+          <mat-card-content>
+            <div class="stat-content">
+              <div class="stat-icon">
+                <mat-icon>people</mat-icon>
+              </div>
+              <div class="stat-details">
+                <h3>Customers</h3>
+                <p class="stat-number">{{ dashboardData.metrics.totalCustomers | number }}</p>
+                <span class="stat-change positive">Registered customers</span>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="stat-card">
+          <mat-card-content>
+            <div class="stat-content">
+              <div class="stat-icon warning">
+                <mat-icon>warning</mat-icon>
+              </div>
+              <div class="stat-details">
+                <h3>Low Stock</h3>
+                <p class="stat-number">{{ dashboardData.metrics.lowStockItems | number }}</p>
+                <span class="stat-change negative">Items need attention</span>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions-section">
+      <mat-card class="actions-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>flash_on</mat-icon>
+            <span>Quick Actions</span>
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="actions-grid">
+            <button 
+              mat-raised-button 
+              color="primary" 
+              class="action-btn"
+              (click)="navigateToInventory()">
+              <mat-icon>inventory</mat-icon>
+              <span>Manage Inventory</span>
+            </button>
+            
+            <button 
+              mat-raised-button 
+              color="accent" 
+              class="action-btn"
+              (click)="navigateToReports()">
+              <mat-icon>analytics</mat-icon>
+              <span>View Reports</span>
+            </button>
+            
+            <button 
+              mat-raised-button 
+              class="action-btn"
+              (click)="navigateToCustomers()">
+              <mat-icon>people</mat-icon>
+              <span>Manage Customers</span>
+            </button>
+            
+            <button 
+              mat-raised-button 
+              color="warn" 
+              class="action-btn debug-btn"
+              (click)="navigateToDebug()">
+              <mat-icon>bug_report</mat-icon>
+              <span>Debug Tools</span>
+            </button>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="recent-activity-section">
+      <mat-card class="activity-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>history</mat-icon>
+            <span>Recent Activity</span>
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="activity-list">
+            <div *ngFor="let activity of dashboardData.recentActivity" class="activity-item">
+              <mat-icon class="activity-icon" [class.warning]="activity.type === 'warning'">{{ activity.icon }}</mat-icon>
+              <div class="activity-details">
+                <p class="activity-text">{{ activity.description }}</p>
+                <span class="activity-time">{{ activity.relativeTime }}</span>
+              </div>
+            </div>
+            
+            <div *ngIf="dashboardData.recentActivity.length === 0" class="no-activity">
+              <mat-icon>info</mat-icon>
+              <p>No recent activity to display</p>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,229 @@
+// Customer List Specific Styles
+.retail-pro-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--retail-primary-color), var(--retail-secondary-color));
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 16px;
+  text-transform: uppercase;
+}
+
+.retail-pro-stats-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+
+  &.bg-primary {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+  }
+
+  &.bg-success {
+    background: linear-gradient(135deg, #28a745, #1e7e34);
+  }
+
+  &.bg-warning {
+    background: linear-gradient(135deg, #ffc107, #e0a800);
+  }
+
+  mat-icon {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+  }
+}
+
+.retail-pro-stats-number {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--retail-text-color);
+  line-height: 1;
+}
+
+.retail-pro-stats-label {
+  font-size: 0.875rem;
+  color: var(--retail-text-muted);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.retail-pro-card-stats {
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+  }
+}
+
+// Table Row Hover Effect
+.retail-pro-table-row {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: rgba(var(--retail-primary-rgb), 0.05) !important;
+  }
+}
+
+// Status Badge Styles
+.retail-pro-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+
+  &.status-active {
+    background-color: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+    border: 1px solid rgba(40, 167, 69, 0.2);
+  }
+
+  &.status-inactive {
+    background-color: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+    border: 1px solid rgba(220, 53, 69, 0.2);
+  }
+}
+
+// Action Buttons
+.retail-pro-table-cell {
+  .d-flex.gap-1 {
+    gap: 4px !important;
+  }
+
+  button[mat-icon-button] {
+    width: 32px;
+    height: 32px;
+    line-height: 32px;
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+
+    &:hover {
+      background-color: rgba(var(--retail-primary-rgb), 0.1);
+    }
+  }
+}
+
+// Search and Filter Section
+.mat-form-field {
+  .mat-form-field-wrapper {
+    padding-bottom: 0;
+  }
+}
+
+// Loading Spinner
+.text-center mat-spinner {
+  margin: 0 auto;
+}
+
+// No Data State
+.text-center {
+  mat-icon {
+    opacity: 0.5;
+    margin-bottom: 16px;
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .retail-pro-stats-number {
+    font-size: 1.5rem;
+  }
+
+  .retail-pro-stats-label {
+    font-size: 0.75rem;
+  }
+
+  .retail-pro-avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
+
+  // Hide less important columns on mobile
+  .mat-column-address,
+  .mat-column-city,
+  .mat-column-createdAt {
+    display: none;
+  }
+
+  .retail-pro-card-body {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .mat-column-email {
+    display: none;
+  }
+
+  .retail-pro-title {
+    font-size: 1.25rem;
+  }
+
+  .d-flex.gap-2 {
+    flex-direction: column;
+    gap: 8px !important;
+
+    button {
+      width: 100%;
+    }
+  }
+}
+
+// Custom Scrollbar for Table
+.table-responsive {
+  &::-webkit-scrollbar {
+    height: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f8f9fa;
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #dee2e6;
+    border-radius: 4px;
+
+    &:hover {
+      background: #adb5bd;
+    }
+  }
+}
+
+// Animation for stats cards
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.retail-pro-card-stats {
+  animation: fadeInUp 0.6s ease forwards;
+
+  &:nth-child(1) { animation-delay: 0.1s; }
+  &:nth-child(2) { animation-delay: 0.2s; }
+  &:nth-child(3) { animation-delay: 0.3s; }
+}

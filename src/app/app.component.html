@@ -1,0 +1,22 @@
+<div class="app-container">
+  <!-- Main Layout (Dashboard, Inventory, etc.) -->
+  <div *ngIf="showLayout()" class="app-layout">
+    <!-- Topbar -->
+    <app-topbar (menuToggle)="toggleSidebar()"></app-topbar>
+    
+    <!-- Sidebar -->
+    <app-sidebar 
+      [collapsed]="sidebarCollapsed()" 
+      (toggleCollapsed)="onSidebarToggled($event)"></app-sidebar>
+    
+    <!-- Main Content -->
+    <main class="main-content" [class.main-content--sidebar-collapsed]="sidebarCollapsed()">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+
+  <!-- Auth Layout (Login, Callback, etc.) -->
+  <div *ngIf="!showLayout()" class="auth-layout">
+    <router-outlet></router-outlet>
+  </div>
+</div>
