@@ -1,0 +1,150 @@
+<!-- Dialog Header -->
+<div class="retail-pro-modal-header">
+  <h2 mat-dialog-title class="retail-pro-modal-title">
+    <mat-icon class="me-2">{{ isEditMode ? 'edit' : 'person_add' }}</mat-icon>
+    {{ isEditMode ? 'Edit Customer' : 'Add New Customer' }}
+  </h2>
+  <button mat-icon-button mat-dialog-close class="retail-pro-modal-close">
+    <mat-icon>close</mat-icon>
+  </button>
+</div>
+
+<!-- Dialog Content -->
+<div mat-dialog-content class="retail-pro-modal-content">
+  <form [formGroup]="customerForm" (ngSubmit)="onSubmit()" class="retail-pro-form">
+    
+    <!-- Customer Name -->
+    <div class="row mb-3">
+      <div class="col-12">
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>Customer Name *</mat-label>
+          <input 
+            matInput 
+            formControlName="name" 
+            placeholder="Enter customer full name"
+            [class.is-invalid]="isFieldInvalid('name')">
+          <mat-icon matSuffix>person</mat-icon>
+          <mat-error *ngIf="isFieldInvalid('name')">
+            {{ getErrorMessage('name') }}
+          </mat-error>
+        </mat-form-field>
+      </div>
+    </div>
+
+    <!-- Email and Phone Row -->
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>Email Address *</mat-label>
+          <input 
+            matInput 
+            type="email"
+            formControlName="email" 
+            placeholder="customer@example.com"
+            [class.is-invalid]="isFieldInvalid('email')">
+          <mat-icon matSuffix>email</mat-icon>
+          <mat-error *ngIf="isFieldInvalid('email')">
+            {{ getErrorMessage('email') }}
+          </mat-error>
+        </mat-form-field>
+      </div>
+      <div class="col-md-6">
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>Phone Number *</mat-label>
+          <input 
+            matInput 
+            type="tel"
+            formControlName="phone" 
+            placeholder="+1 (555) 123-4567"
+            [class.is-invalid]="isFieldInvalid('phone')">
+          <mat-icon matSuffix>phone</mat-icon>
+          <mat-error *ngIf="isFieldInvalid('phone')">
+            {{ getErrorMessage('phone') }}
+          </mat-error>
+        </mat-form-field>
+      </div>
+    </div>
+
+    <!-- Address -->
+    <div class="row mb-3">
+      <div class="col-12">
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>Address</mat-label>
+          <textarea 
+            matInput 
+            formControlName="address" 
+            placeholder="Enter customer address"
+            rows="3"
+            [class.is-invalid]="isFieldInvalid('address')"></textarea>
+          <mat-icon matSuffix>location_on</mat-icon>
+          <mat-error *ngIf="isFieldInvalid('address')">
+            {{ getErrorMessage('address') }}
+          </mat-error>
+        </mat-form-field>
+      </div>
+    </div>
+
+    <!-- Form Validation Summary -->
+    <div *ngIf="customerForm.invalid && customerForm.touched" class="retail-pro-alert retail-pro-alert-warning mb-3">
+      <mat-icon class="me-2">warning</mat-icon>
+      <span>Please fix the errors above before submitting</span>
+    </div>
+
+    <!-- Customer Preview (Edit Mode) -->
+    <div *ngIf="isEditMode && customer" class="retail-pro-card retail-pro-card-info mb-3">
+      <div class="retail-pro-card-body">
+        <h6 class="retail-pro-card-title">
+          <mat-icon class="me-2">info</mat-icon>
+          Customer Information
+        </h6>
+        <div class="row">
+          <div class="col-sm-6">
+            <small class="text-muted">Customer ID:</small>
+            <div class="fw-semibold">{{ customer.id | slice:0:8 }}...</div>
+          </div>
+          <div class="col-sm-6">
+            <small class="text-muted">Created:</small>
+            <div class="fw-semibold">{{ customer.createdAt | date:'MMM dd, yyyy' }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </form>
+</div>
+
+<!-- Dialog Actions -->
+<div mat-dialog-actions class="retail-pro-modal-actions">
+  <div class="d-flex justify-content-between w-100">
+    <div>
+      <!-- Additional Info -->
+      <small class="text-muted">* Required fields</small>
+    </div>
+    <div class="d-flex gap-2">
+      <button 
+        mat-stroked-button 
+        type="button" 
+        class="retail-pro-btn"
+        (click)="onCancel()"
+        [disabled]="isLoading">
+        Cancel
+      </button>
+      <button 
+        mat-raised-button 
+        color="primary" 
+        type="submit"
+        class="retail-pro-btn retail-pro-btn-primary"
+        (click)="onSubmit()"
+        [disabled]="customerForm.invalid || isLoading">
+        <span *ngIf="isLoading" class="d-flex align-items-center">
+          <mat-spinner diameter="20" class="me-2"></mat-spinner>
+          {{ isEditMode ? 'Updating...' : 'Creating...' }}
+        </span>
+        <span *ngIf="!isLoading" class="d-flex align-items-center">
+          <mat-icon class="me-2">{{ isEditMode ? 'save' : 'person_add' }}</mat-icon>
+          {{ isEditMode ? 'Update Customer' : 'Create Customer' }}
+        </span>
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,109 @@
+<div class="sidebar" [class.sidebar--collapsed]="isCollapsed()">
+  <!-- Sidebar Header -->
+  <div class="sidebar__header">
+    @if (!isCollapsed()) {
+      <div class="sidebar__brand">
+        <div class="sidebar__brand-icon">
+          <span>🏪</span>
+        </div>
+        <span class="sidebar__brand-text">Retail Pro</span>
+      </div>
+    }
+    <button 
+      class="sidebar__toggle" 
+      mat-icon-button 
+      (click)="toggleSidebar()"
+      [attr.aria-label]="isCollapsed() ? 'Expand sidebar' : 'Collapse sidebar'">
+      <mat-icon>{{ isCollapsed() ? 'chevron_right' : 'chevron_left' }}</mat-icon>
+    </button>
+  </div>
+
+  <!-- Main Navigation -->
+  <nav class="sidebar__nav">
+    <ul class="sidebar__nav-list">
+      @for (item of menuItems; track item.label) {
+        <li 
+          class="sidebar__nav-item"
+          [class.sidebar__nav-item--has-children]="item.children">
+          
+          <!-- Main Menu Item -->
+          <div 
+            class="sidebar__nav-link"
+            [class.sidebar__nav-link--active]="isActiveRoute(item.route)"
+            [class.sidebar__nav-link--expanded]="item.isExpanded"
+            (click)="item.children ? toggleMenuItem(item) : navigateTo(item.route)">
+            
+            <div class="sidebar__nav-link-content">
+              <mat-icon class="sidebar__nav-icon">{{ item.icon }}</mat-icon>
+              @if (!isCollapsed()) {
+                <span class="sidebar__nav-text">{{ item.label }}</span>
+              }
+            </div>
+            
+            @if (item.children && !isCollapsed()) {
+              <mat-icon class="sidebar__nav-arrow">
+                {{ item.isExpanded ? 'expand_less' : 'expand_more' }}
+              </mat-icon>
+            }
+          </div>
+
+          <!-- Submenu -->
+          @if (item.children && item.isExpanded && !isCollapsed()) {
+            <ul class="sidebar__submenu">
+              @for (child of item.children; track child.label) {
+                <li class="sidebar__submenu-item">
+                  <a 
+                    [routerLink]="child.route"
+                    class="sidebar__submenu-link"
+                    [class.sidebar__submenu-link--active]="isActiveRoute(child.route)">
+                    {{ child.label }}
+                  </a>
+                </li>
+              }
+            </ul>
+          }
+        </li>
+      }
+    </ul>
+  </nav>
+
+  <!-- Section Divider -->
+  @if (!isCollapsed()) {
+    <div class="sidebar__divider">
+      <span class="sidebar__section-title">Sales channels</span>
+    </div>
+  }
+
+  <!-- Sales Channels -->
+  <nav class="sidebar__nav sidebar__nav--sales-channels">
+    <ul class="sidebar__nav-list">
+      @for (channel of salesChannels; track channel.label) {
+        <li class="sidebar__nav-item">
+          <div class="sidebar__nav-link">
+            <div class="sidebar__nav-link-content">
+              <mat-icon class="sidebar__nav-icon">{{ channel.icon }}</mat-icon>
+              @if (!isCollapsed()) {
+                <span class="sidebar__nav-text">{{ channel.label }}</span>
+              }
+            </div>
+            @if (!isCollapsed()) {
+              <div class="sidebar__channel-count">2</div>
+            }
+          </div>
+        </li>
+      }
+    </ul>
+  </nav>
+
+  <!-- Settings (Bottom) -->
+  <div class="sidebar__settings">
+    <div class="sidebar__nav-link">
+      <div class="sidebar__nav-link-content">
+        <mat-icon class="sidebar__nav-icon">settings</mat-icon>
+        @if (!isCollapsed()) {
+          <span class="sidebar__nav-text">Settings</span>
+        }
+      </div>
+    </div>
+  </div>
+</div>

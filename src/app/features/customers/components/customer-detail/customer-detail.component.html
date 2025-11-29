@@ -1,0 +1,353 @@
+<!-- Dialog Header -->
+<div class="retail-pro-modal-header">
+  <h2 mat-dialog-title class="retail-pro-modal-title">
+    <div class="customer-avatar me-3">{{ getCustomerInitials() }}</div>
+    <div>
+      <div class="customer-name">{{ customer.name }}</div>
+      <div class="customer-subtitle">Customer Details</div>
+    </div>
+  </h2>
+  <div class="d-flex gap-2">
+    <button mat-icon-button [matTooltip]="'Edit Customer'" (click)="editCustomer()">
+      <mat-icon>edit</mat-icon>
+    </button>
+    <button mat-icon-button mat-dialog-close class="retail-pro-modal-close">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+</div>
+
+<!-- Dialog Content -->
+<div mat-dialog-content class="retail-pro-modal-content">
+  
+  <!-- Customer Summary Cards -->
+  <div class="row mb-4">
+    <div class="col-md-4">
+      <div class="retail-pro-card retail-pro-card-stats">
+        <div class="retail-pro-card-body text-center">
+          <div class="retail-pro-stats-icon bg-primary mx-auto mb-2">
+            <mat-icon>shopping_cart</mat-icon>
+          </div>
+          <h4 class="retail-pro-stats-number mb-1">{{ getPurchaseCount() }}</h4>
+          <p class="retail-pro-stats-label mb-0">Total Purchases</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="retail-pro-card retail-pro-card-stats">
+        <div class="retail-pro-card-body text-center">
+          <div class="retail-pro-stats-icon bg-success mx-auto mb-2">
+            <mat-icon>attach_money</mat-icon>
+          </div>
+          <h4 class="retail-pro-stats-number mb-1">{{ getTotalSpent() | currency }}</h4>
+          <p class="retail-pro-stats-label mb-0">Total Spent</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="retail-pro-card retail-pro-card-stats">
+        <div class="retail-pro-card-body text-center">
+          <div class="retail-pro-stats-icon bg-info mx-auto mb-2">
+            <mat-icon>schedule</mat-icon>
+          </div>
+          <h4 class="retail-pro-stats-number mb-1">{{ (getLastPurchaseDate() | date:'MMM dd') || 'Never' }}</h4>
+          <p class="retail-pro-stats-label mb-0">Last Purchase</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab Navigation -->
+  <mat-tab-group [(selectedIndex)]="activeTab" class="retail-pro-tabs">
+    
+    <!-- Contact Information Tab -->
+    <mat-tab label="Contact Info">
+      <div class="tab-content">
+        <div class="retail-pro-card">
+          <div class="retail-pro-card-header">
+            <h5 class="mb-0">
+              <mat-icon class="me-2">contact_page</mat-icon>
+              Contact Information
+            </h5>
+          </div>
+          <div class="retail-pro-card-body">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="info-item">
+                  <label class="info-label">
+                    <mat-icon>email</mat-icon>
+                    Email Address
+                  </label>
+                  <div class="info-value">
+                    <a [href]="'mailto:' + customer.email" class="text-decoration-none">
+                      {{ customer.email }}
+                    </a>
+                    <button mat-icon-button (click)="emailCustomer()" class="ms-2" [matTooltip]="'Send Email'">
+                      <mat-icon>send</mat-icon>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="info-item">
+                  <label class="info-label">
+                    <mat-icon>phone</mat-icon>
+                    Phone Number
+                  </label>
+                  <div class="info-value">
+                    <a [href]="'tel:' + customer.phone" class="text-decoration-none">
+                      {{ customer.phone }}
+                    </a>
+                    <button mat-icon-button (click)="callCustomer()" class="ms-2" [matTooltip]="'Call Customer'">
+                      <mat-icon>call</mat-icon>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-6">
+                <div class="info-item">
+                  <label class="info-label">
+                    <mat-icon>location_on</mat-icon>
+                    Address
+                  </label>
+                  <div class="info-value">{{ customer.address || 'Not provided' }}</div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="info-item">
+                  <label class="info-label">
+                    <mat-icon>location_city</mat-icon>
+                    City & State
+                  </label>
+                  <div class="info-value">
+                    {{ customer.city || 'Not provided' }}
+                    <span *ngIf="customer.state">, {{ customer.state }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6">
+                <div class="info-item">
+                  <label class="info-label">
+                    <mat-icon>verified</mat-icon>
+                    Status
+                  </label>
+                  <div class="info-value">
+                    <span class="retail-pro-badge" [ngClass]="customer.isActive ? 'status-active' : 'status-inactive'">
+                      {{ customer.isActive ? 'Active' : 'Inactive' }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="info-item">
+                  <label class="info-label">
+                    <mat-icon>schedule</mat-icon>
+                    Customer Since
+                  </label>
+                  <div class="info-value">{{ customer.createdAt | date:'MMM dd, yyyy' }}</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- WhatsApp Section -->
+            <div class="row" *ngIf="customer.whatsAppNumber">
+              <div class="col-12">
+                <div class="info-item">
+                  <label class="info-label">
+                    <mat-icon>message</mat-icon>
+                    WhatsApp
+                  </label>
+                  <div class="info-value">
+                    {{ customer.whatsAppNumber }}
+                    <button 
+                      mat-raised-button 
+                      color="primary" 
+                      class="ms-3 retail-pro-btn retail-pro-btn-primary"
+                      (click)="sendWhatsAppMessage()">
+                      <mat-icon class="me-1">send</mat-icon>
+                      Send Message
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </mat-tab>
+
+    <!-- Purchase History Tab -->
+    <mat-tab label="Purchase History">
+      <div class="tab-content">
+        
+        <!-- Loading State -->
+        <div *ngIf="isLoadingHistory" class="text-center p-4">
+          <mat-spinner diameter="40"></mat-spinner>
+          <p class="mt-2 text-muted">Loading purchase history...</p>
+        </div>
+
+        <!-- Purchase History Content -->
+        <div *ngIf="!isLoadingHistory">
+          
+          <!-- No Purchases -->
+          <div *ngIf="!purchaseHistory || purchaseHistory.sales.length === 0" class="text-center p-5">
+            <mat-icon class="text-muted" style="font-size: 48px; height: 48px; width: 48px;">shopping_cart_outlined</mat-icon>
+            <h5 class="text-muted mt-3">No Purchase History</h5>
+            <p class="text-muted">This customer hasn't made any purchases yet</p>
+          </div>
+
+          <!-- Purchase List -->
+          <div *ngIf="purchaseHistory && purchaseHistory.sales.length > 0">
+            
+            <!-- Purchase Summary -->
+            <div class="retail-pro-card mb-4">
+              <div class="retail-pro-card-body">
+                <div class="row text-center">
+                  <div class="col-md-4">
+                    <h4 class="text-primary mb-1">{{ purchaseHistory.totalPurchases }}</h4>
+                    <small class="text-muted">Total Orders</small>
+                  </div>
+                  <div class="col-md-4">
+                    <h4 class="text-success mb-1">{{ purchaseHistory.totalAmount | currency }}</h4>
+                    <small class="text-muted">Total Value</small>
+                  </div>
+                  <div class="col-md-4">
+                    <h4 class="text-info mb-1">{{ (purchaseHistory.totalAmount / purchaseHistory.totalPurchases) | currency }}</h4>
+                    <small class="text-muted">Average Order</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Purchase Items -->
+            <div class="retail-pro-card">
+              <div class="retail-pro-card-header">
+                <h5 class="mb-0">
+                  <mat-icon class="me-2">receipt_long</mat-icon>
+                  Recent Purchases
+                </h5>
+              </div>
+              <div class="retail-pro-card-body p-0">
+                <div class="purchase-item" *ngFor="let sale of purchaseHistory.sales">
+                  <div class="purchase-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                      <div>
+                        <h6 class="purchase-invoice mb-1">{{ sale.invoiceNumber }}</h6>
+                        <small class="text-muted">{{ sale.saleDate | date:'MMM dd, yyyy - hh:mm a' }}</small>
+                      </div>
+                      <div class="text-end">
+                        <div class="purchase-amount">{{ sale.totalAmount | currency }}</div>
+                        <small class="text-muted">{{ sale.items.length }} item(s)</small>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- Purchase Items Detail -->
+                  <div class="purchase-items">
+                    <div class="item-row" *ngFor="let item of sale.items">
+                      <div class="d-flex justify-content-between">
+                        <div class="item-info">
+                          <span class="item-name">{{ item.productName }}</span>
+                          <small class="text-muted ms-2">× {{ item.quantity }}</small>
+                        </div>
+                        <div class="item-price">
+                          <span class="fw-semibold">{{ item.totalPrice | currency }}</span>
+                          <small class="text-muted ms-1">({{ item.unitPrice | currency }} each)</small>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </mat-tab>
+
+    <!-- Customer Actions Tab -->
+    <mat-tab label="Actions">
+      <div class="tab-content">
+        <div class="retail-pro-card">
+          <div class="retail-pro-card-header">
+            <h5 class="mb-0">
+              <mat-icon class="me-2">settings</mat-icon>
+              Customer Actions
+            </h5>
+          </div>
+          <div class="retail-pro-card-body">
+            <div class="action-grid">
+              
+              <div class="action-item">
+                <button mat-raised-button color="primary" class="action-btn retail-pro-btn retail-pro-btn-primary">
+                  <mat-icon>add_shopping_cart</mat-icon>
+                  <span>Create Sale</span>
+                </button>
+                <p class="action-description">Create a new sale for this customer</p>
+              </div>
+
+              <div class="action-item">
+                <button mat-raised-button class="action-btn retail-pro-btn" (click)="editCustomer()">
+                  <mat-icon>edit</mat-icon>
+                  <span>Edit Details</span>
+                </button>
+                <p class="action-description">Update customer information</p>
+              </div>
+
+              <div class="action-item">
+                <button mat-raised-button class="action-btn retail-pro-btn" (click)="emailCustomer()">
+                  <mat-icon>email</mat-icon>
+                  <span>Send Email</span>
+                </button>
+                <p class="action-description">Send an email to the customer</p>
+              </div>
+
+              <div class="action-item">
+                <button mat-raised-button class="action-btn retail-pro-btn" (click)="callCustomer()">
+                  <mat-icon>phone</mat-icon>
+                  <span>Call Customer</span>
+                </button>
+                <p class="action-description">Make a phone call to the customer</p>
+              </div>
+
+              <div class="action-item" *ngIf="customer.whatsAppNumber">
+                <button mat-raised-button color="accent" class="action-btn retail-pro-btn" (click)="sendWhatsAppMessage()">
+                  <mat-icon>message</mat-icon>
+                  <span>WhatsApp</span>
+                </button>
+                <p class="action-description">Send a WhatsApp message</p>
+              </div>
+
+              <div class="action-item">
+                <button mat-raised-button class="action-btn retail-pro-btn">
+                  <mat-icon>print</mat-icon>
+                  <span>Print Info</span>
+                </button>
+                <p class="action-description">Print customer information</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </mat-tab>
+
+  </mat-tab-group>
+</div>
+
+<!-- Dialog Actions -->
+<div mat-dialog-actions class="retail-pro-modal-actions">
+  <div class="d-flex justify-content-end w-100">
+    <button 
+      mat-stroked-button 
+      class="retail-pro-btn"
+      (click)="onClose()">
+      Close
+    </button>
+  </div>
+</div>

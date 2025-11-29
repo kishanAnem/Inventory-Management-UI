@@ -1,0 +1,157 @@
+<div class="setup-container">
+  <div class="setup-content">
+    <mat-card class="setup-card">
+      <mat-card-header>
+        <div class="setup-header">
+          <mat-icon class="setup-icon">store</mat-icon>
+          <div>
+            <mat-card-title>Welcome to Retail Pro!</mat-card-title>
+            <mat-card-subtitle>Let's set up your business profile</mat-card-subtitle>
+          </div>
+        </div>
+      </mat-card-header>
+
+      <mat-card-content>
+        <div class="welcome-section">
+          <p class="welcome-message">
+            Hi {{ (auth.user$ | async)?.name }}! To get started, please provide some basic information about your business.
+          </p>
+          
+          <!-- Setup Status -->
+          <div *ngIf="setupStatus" class="setup-status">
+            <div class="status-indicator" [class.complete]="setupStatus.isSetupComplete">
+              <mat-icon>{{ setupStatus.isSetupComplete ? 'check_circle' : 'info' }}</mat-icon>
+              <span>{{ setupStatus.isSetupComplete ? 'Setup Complete' : 'Setup Required' }}</span>
+            </div>
+            <div *ngIf="!setupStatus.isSetupComplete && setupStatus.missingFields.length > 0" class="missing-fields">
+              <p>Please complete the following fields:</p>
+              <ul>
+                <li *ngFor="let field of setupStatus.missingFields">{{ field }}</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <form [formGroup]="setupForm" (ngSubmit)="onSubmit()" class="setup-form">
+          <!-- Basic Information Section -->
+          <div class="form-section">
+            <h3 class="section-title">
+              <mat-icon>business</mat-icon>
+              Basic Information
+            </h3>
+            
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Business Name *</mat-label>
+              <input matInput 
+                     formControlName="name" 
+                     placeholder="Enter your business name"
+                     required>
+              <mat-icon matSuffix>business</mat-icon>
+              <mat-error *ngIf="setupForm.get('name')?.hasError('required')">
+                Business name is required
+              </mat-error>
+              <mat-error *ngIf="setupForm.get('name')?.hasError('minlength')">
+                Business name must be at least 2 characters
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Mobile Number</mat-label>
+              <input matInput 
+                     formControlName="mobile" 
+                     placeholder="Enter your mobile number"
+                     type="tel">
+              <mat-icon matSuffix>phone</mat-icon>
+              <mat-hint>Include country code (e.g., +1 555-123-4567)</mat-hint>
+              <mat-error *ngIf="setupForm.get('mobile')?.hasError('pattern')">
+                Please enter a valid mobile number
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <mat-divider></mat-divider>
+
+          <!-- Location Information Section -->
+          <div class="form-section">
+            <h3 class="section-title">
+              <mat-icon>location_on</mat-icon>
+              Location Information
+            </h3>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Business Address</mat-label>
+              <textarea matInput 
+                       formControlName="address" 
+                       placeholder="Enter your business address"
+                       rows="3">
+              </textarea>
+              <mat-icon matSuffix>location_on</mat-icon>
+              <mat-hint>This will appear on receipts and documents</mat-hint>
+            </mat-form-field>
+
+            <div class="form-row">
+              <mat-form-field appearance="outline" class="half-width">
+                <mat-label>City</mat-label>
+                <input matInput 
+                       formControlName="city" 
+                       placeholder="City">
+                <mat-icon matSuffix>location_city</mat-icon>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="half-width">
+                <mat-label>State/Province</mat-label>
+                <input matInput 
+                       formControlName="state" 
+                       placeholder="State or Province">
+                <mat-icon matSuffix>map</mat-icon>
+              </mat-form-field>
+            </div>
+          </div>
+
+          <mat-divider></mat-divider>
+
+          <!-- Optional: Logo Upload Section -->
+          <div class="form-section">
+            <h3 class="section-title">
+              <mat-icon>image</mat-icon>
+              Business Logo (Optional)
+            </h3>
+            
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Logo URL</mat-label>
+              <input matInput 
+                     formControlName="logoUrl" 
+                     placeholder="https://example.com/logo.png"
+                     type="url">
+              <mat-icon matSuffix>image</mat-icon>
+              <mat-hint>Provide a URL to your business logo image</mat-hint>
+              <mat-error *ngIf="setupForm.get('logoUrl')?.hasError('pattern')">
+                Please enter a valid URL
+              </mat-error>
+            </mat-form-field>
+          </div>
+        </form>
+      </mat-card-content>
+
+      <mat-card-actions class="setup-actions">
+        <button mat-button 
+                type="button" 
+                (click)="skipSetup()"
+                [disabled]="isLoading">
+          <mat-icon>skip_next</mat-icon>
+          <span>Skip for now</span>
+        </button>
+        <button mat-raised-button 
+                color="primary" 
+                (click)="onSubmit()"
+                [disabled]="isLoading || !setupForm.valid">
+          <mat-spinner *ngIf="isLoading" diameter="20"></mat-spinner>
+          <mat-icon *ngIf="!isLoading">save</mat-icon>
+          <span *ngIf="!isLoading">Complete Setup</span>
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+</div>

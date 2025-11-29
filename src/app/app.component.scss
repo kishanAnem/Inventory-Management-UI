@@ -1,0 +1,104 @@
+/* App Layout Styles - Retail Pro Admin Theme */
+
+.app-container {
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+// Main App Layout (Dashboard, Inventory, etc.)
+.app-layout {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  background: #f6f6f7;
+  position: relative;
+  z-index: 1; // Ensure app content is below dialogs
+}
+
+// Auth Layout (Login, Callback, etc.)
+.auth-layout {
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  background: #ffffff;
+  
+  // Ensure auth pages take full screen
+  :ng-deep {
+    .login-container,
+    .callback-container,
+    .unauthorized-container {
+      width: 100%;
+      height: 100vh;
+      margin: 0;
+      padding: 0;
+    }
+  }
+}
+
+.main-content {
+  flex: 1;
+  margin-left: 240px;
+  margin-top: 56px;
+  padding: 24px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: #f6f6f7;
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  
+  /* Hide scrollbar for WebKit browsers */
+  &::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+  
+  &--sidebar-collapsed {
+    margin-left: 56px;
+  }
+  
+  @media (max-width: 768px) {
+    margin-left: 0;
+    
+    &--sidebar-collapsed {
+      margin-left: 0;
+    }
+  }
+}
+
+/* Loading and transitions */
+.fade-in {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from { 
+    opacity: 0; 
+    transform: translateY(10px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+/* Material Design elevation and shadows */
+.elevation-1 { 
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+}
+
+.elevation-2 { 
+  box-shadow: 0 4px 8px rgba(0,0,0,0.12); 
+}
+
+.elevation-3 { 
+  box-shadow: 0 8px 16px rgba(0,0,0,0.15); 
+}
+
+.elevation-4 { 
+  box-shadow: 0 12px 24px rgba(0,0,0,0.18); 
+}
+
+/* Scrollbars are now globally hidden in styles.scss */

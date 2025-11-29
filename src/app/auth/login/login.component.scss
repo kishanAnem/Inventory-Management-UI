@@ -1,0 +1,359 @@
+.login-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #6b7280 0%, #4b5563 50%, #374151 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.login-card-wrapper {
+  position: relative;
+  z-index: 2;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 480px;
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  border: none;
+  overflow: hidden;
+}
+
+.login-header {
+  background: transparent;
+  color: #374151;
+  text-align: center;
+  padding: 40px 32px 32px;
+  margin: -24px -24px 24px -24px;
+
+  .brand-logo {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+    gap: 12px;
+
+    .brand-icon {
+      font-size: 48px;
+      width: 48px;
+      height: 48px;
+      color: #008060;
+    }
+
+    .brand-title {
+      font-size: 32px;
+      font-weight: 700;
+      margin: 0;
+      letter-spacing: -0.5px;
+    }
+  }
+
+  .brand-subtitle {
+    font-size: 16px;
+    opacity: 0.9;
+    margin: 0;
+    font-weight: 400;
+  }
+}
+
+.login-content {
+  padding: 32px;
+}
+
+.welcome-section {
+  text-align: center;
+  margin-bottom: 32px;
+
+  h2 {
+    font-size: 28px;
+    font-weight: 600;
+    color: #202223;
+    margin: 0 0 8px 0;
+  }
+
+  p {
+    font-size: 16px;
+    color: #6d7175;
+    margin: 0;
+  }
+}
+
+.login-actions {
+  margin-bottom: 40px;
+
+  .loading-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+
+    p {
+      color: #6d7175;
+      margin: 0;
+    }
+  }
+
+  .login-button-section {
+    display: flex;
+   justify-content: space-between;
+
+    .login-btn {
+      height: 48px;
+      padding: 0 32px;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #008060, #004c3f);
+      color: white !important;
+      border: none;
+      box-shadow: 0 4px 12px rgba(0, 128, 96, 0.3);
+      transition: all 0.2s ease;
+      cursor: pointer;
+      min-width: 280px;
+
+      &:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 128, 96, 0.4);
+        background: linear-gradient(135deg, #00a86b, #005a46);
+      }
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      mat-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+        color: white !important;
+      }
+
+      span {
+        color: white !important;
+        font-weight: 600;
+        font-size: 16px;
+        text-transform: none;
+        letter-spacing: 0.5px;
+      }
+    }
+
+    // Google Button Specific
+    .google-btn {
+      background: rgba(255, 255, 255, 0.9);
+      color: #374151 !important;
+      border: 1px solid rgba(55, 65, 81, 0.2);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+
+      &:hover:not(:disabled) {
+        background: rgba(255, 255, 255, 0.95);
+        border-color: rgba(55, 65, 81, 0.3);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        transform: translateY(-1px);
+      }
+
+      &:active:not(:disabled) {
+        background: rgba(241, 243, 244, 0.9);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+        transform: translateY(0px);
+      }
+
+      .button-text {
+        color: #374151 !important;
+        font-weight: 500;
+        font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif;
+        flex: 1;
+        text-align: center;
+      }
+
+      .google-icon {
+        width: 20px;
+        height: 20px;
+        flex-shrink: 0;
+        margin-right: 8px;
+      }
+    }
+  }
+}
+
+.features-section {
+  h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #202223;
+    margin: 0 0 16px 0;
+    text-align: center;
+  }
+
+  .features-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    li {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid #f0f0f0;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      mat-icon {
+        color: #008060;
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+      }
+
+      span {
+        color: #6d7175;
+        font-size: 14px;
+      }
+    }
+  }
+}
+
+.login-footer {
+  background: #f8f9fa;
+  padding: 16px 32px;
+  margin: 24px -24px -24px -24px;
+  border-top: 1px solid #e1e1e1;
+  display: flex;
+  justify-content: center;
+
+  .debug-link {
+    .debug-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: #6d7175;
+      text-transform: none;
+
+      mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+      }
+
+      &:hover {
+        background: rgba(0, 128, 96, 0.1);
+        color: #008060;
+      }
+    }
+  }
+}
+
+// Background decoration
+.background-decoration {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  overflow: hidden;
+
+  .decoration-circle {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.05);
+    animation: float 6s ease-in-out infinite;
+
+    &.circle-1 {
+      width: 200px;
+      height: 200px;
+      top: 10%;
+      left: -10%;
+      animation-delay: 0s;
+    }
+
+    &.circle-2 {
+      width: 150px;
+      height: 150px;
+      top: 60%;
+      right: -5%;
+      animation-delay: 2s;
+    }
+
+    &.circle-3 {
+      width: 100px;
+      height: 100px;
+      bottom: 20%;
+      left: 20%;
+      animation-delay: 4s;
+    }
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-20px) rotate(180deg);
+  }
+}
+
+// Responsive design
+@media (max-width: 640px) {
+  .login-container {
+    padding: 16px;
+  }
+
+  .login-card {
+    max-width: 100%;
+  }
+
+  .login-header {
+    padding: 32px 24px 24px;
+
+    .brand-logo {
+      gap: 8px;
+
+      .brand-icon {
+        font-size: 40px;
+        width: 40px;
+        height: 40px;
+        color: #008060;
+      }
+
+      .brand-title {
+        font-size: 28px;
+      }
+    }
+  }
+
+  .login-content {
+    padding: 24px;
+  }
+
+  .welcome-section {
+    h2 {
+      font-size: 24px;
+    }
+
+    p {
+      font-size: 14px;
+    }
+  }
+
+  .login-actions {
+    .login-button-section {
+      .login-btn {
+        width: 100%;
+        height: 44px;
+        font-size: 15px;
+      }
+    }
+  }
+}

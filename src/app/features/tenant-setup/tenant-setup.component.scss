@@ -1,0 +1,267 @@
+.setup-container {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #6b7280 0%, #4b5563 50%, #374151 100%);
+  padding: 20px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.setup-content {
+  width: 100%;
+  max-width: 700px;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 40px);
+  justify-content: center;
+}
+
+.setup-card {
+  padding: 32px;
+  border-radius: 16px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.95);
+  max-height: none;
+  overflow: visible;
+  position: relative;
+}
+
+.setup-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.setup-icon {
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+  color: #008060;
+}
+
+.welcome-section {
+  margin-bottom: 24px;
+}
+
+.welcome-message {
+  color: #6d7175;
+  margin-bottom: 16px;
+  line-height: 1.6;
+  font-size: 16px;
+}
+
+.setup-status {
+  background: #f8f9fa;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #f59e0b;
+  font-weight: 500;
+
+  &.complete {
+    color: #10b981;
+  }
+}
+
+.missing-fields {
+  margin-top: 12px;
+  
+  p {
+    color: #6b7280;
+    margin-bottom: 8px;
+    font-size: 14px;
+  }
+  
+  ul {
+    margin: 0;
+    padding-left: 20px;
+    color: #ef4444;
+    
+    li {
+      margin-bottom: 4px;
+      font-size: 14px;
+    }
+  }
+}
+
+.setup-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-section {
+  margin: 24px 0;
+}
+
+.section-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #374151;
+  margin-bottom: 20px;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1;
+  
+  mat-icon {
+    color: #008060;
+    margin-right: 4px;
+  }
+}
+
+.full-width {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.form-row {
+  display: flex;
+  gap: 16px;
+  
+  @media (max-width: 600px) {
+    flex-direction: column;
+    gap: 16px;
+  }
+}
+
+.half-width {
+  flex: 1;
+  margin-bottom: 16px;
+  
+  @media (max-width: 600px) {
+    width: 100%;
+  }
+}
+
+.setup-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 32px;
+  margin-bottom: 24px;
+  padding-top: 24px;
+  border-top: 2px solid #e5e7eb;
+  gap: 16px;
+}
+
+.setup-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 24px;
+  font-weight: 500;
+  white-space: nowrap;
+  
+  mat-icon {
+    margin-right: 4px;
+  }
+  
+  span {
+    display: inline-block;
+    line-height: 1;
+  }
+}
+
+.setup-actions button[mat-raised-button] {
+  min-width: 180px;
+}
+
+mat-spinner {
+  margin-right: 8px;
+}
+
+mat-divider {
+  margin: 24px 0;
+}
+
+// Success and error snackbar styles
+::ng-deep .success-snackbar {
+  background: #10b981;
+  color: white;
+}
+
+::ng-deep .error-snackbar {
+  background: #ef4444;
+  color: white;
+}
+
+// Ensure proper scrolling behavior
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+}
+
+// Override any global scroll hiding for this component
+.setup-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.setup-container::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.setup-container::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+}
+
+.setup-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+@media (max-width: 600px) {
+  .setup-container {
+    padding: 16px;
+    align-items: flex-start;
+    padding-top: 20px;
+    padding-bottom: 20px;
+  }
+  
+  .setup-content {
+    min-height: calc(100vh - 40px);
+    justify-content: flex-start;
+  }
+  
+  .setup-card {
+    padding: 24px;
+  }
+  
+  .setup-header {
+    flex-direction: column;
+    text-align: row;
+    gap: 12px;
+  }
+  
+  .setup-actions {
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 16px;
+    
+    button {
+      width: 100%;
+      min-width: unset;
+      justify-content: center;
+    }
+  }
+
+  .form-section {
+    margin: 16px 0;
+  }
+}

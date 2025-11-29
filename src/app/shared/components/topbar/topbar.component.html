@@ -1,0 +1,121 @@
+<header class="topbar">
+  <!-- Left Section -->
+  <div class="topbar__left">
+    <button 
+      class="topbar__menu-toggle" 
+      mat-icon-button
+      (click)="onMenuToggle()"
+      aria-label="Toggle menu">
+      <mat-icon>menu</mat-icon>
+    </button>
+    
+    <!-- Search Bar -->
+    <div class="topbar__search">
+      <mat-icon class="topbar__search-icon">search</mat-icon>
+      <input 
+        type="text" 
+        placeholder="Search" 
+        class="topbar__search-input"
+        aria-label="Search">
+      <kbd class="topbar__search-shortcut">⌘K</kbd>
+    </div>
+  </div>
+
+  <!-- Right Section -->
+  <div class="topbar__right">
+    <!-- Notifications -->
+    <button 
+      class="topbar__action-btn" 
+      mat-icon-button
+      aria-label="Notifications">
+      <mat-icon>notifications_none</mat-icon>
+    </button>
+
+    <!-- Authentication Section -->
+    <div class="topbar__auth">
+      <!-- Loading State -->
+      <div *ngIf="auth0.isLoading$ | async" class="topbar__loading">
+        <mat-icon class="spinning">refresh</mat-icon>
+      </div>
+
+      <!-- Login Button (when not authenticated) -->
+      <button 
+        *ngIf="!(auth0.isAuthenticated$ | async) && !(auth0.isLoading$ | async)"
+        class="topbar__login-btn retail-pro-btn retail-pro-btn--primary"
+        (click)="login()">
+        <mat-icon>login</mat-icon>
+        <span>Login</span>
+      </button>
+
+      <!-- User Menu (when authenticated) -->
+      <div 
+        *ngIf="auth0.isAuthenticated$ | async" 
+        class="topbar__user">
+        <button 
+          class="topbar__user-btn"
+          [matMenuTriggerFor]="userMenu"
+          aria-label="User menu">
+          <div class="topbar__avatar">
+            <img 
+              *ngIf="(auth0.user$ | async)?.picture; else initialsAvatar"
+              [src]="(auth0.user$ | async)?.picture" 
+              [alt]="(auth0.user$ | async)?.name"
+              class="topbar__avatar-img"
+              (error)="onImageError($event)"
+              loading="lazy">
+            <ng-template #initialsAvatar>
+              <span>{{ getInitials((auth0.user$ | async)?.name || 'User') }}</span>
+            </ng-template>
+          </div>
+          <div class="topbar__user-info">
+            <span class="topbar__user-name">{{ (auth0.user$ | async)?.name || 'User' }}</span>
+            <span class="topbar__store-name">Retail Pro</span>
+          </div>
+          <mat-icon>expand_more</mat-icon>
+        </button>
+
+        <mat-menu #userMenu="matMenu" class="topbar__user-menu">
+          <div class="topbar__user-menu-header">
+            <div class="topbar__user-menu-avatar">
+              <img 
+                *ngIf="(auth0.user$ | async)?.picture; else menuInitialsAvatar"
+                [src]="(auth0.user$ | async)?.picture" 
+                [alt]="(auth0.user$ | async)?.name"
+                (error)="onImageError($event)"
+                loading="lazy">
+              <ng-template #menuInitialsAvatar>
+                <span>{{ getInitials((auth0.user$ | async)?.name || 'User') }}</span>
+              </ng-template>
+            </div>
+            <div class="topbar__user-menu-info">
+              <div class="topbar__user-menu-name">{{ (auth0.user$ | async)?.name }}</div>
+              <div class="topbar__user-menu-email">{{ (auth0.user$ | async)?.email }}</div>
+            </div>
+          </div>
+          
+          <mat-divider></mat-divider>
+          
+          <button mat-menu-item>
+            <mat-icon>person</mat-icon>
+            <span>Profile</span>
+          </button>
+          <button mat-menu-item>
+            <mat-icon>settings</mat-icon>
+            <span>Settings</span>
+          </button>
+          <button mat-menu-item>
+            <mat-icon>business</mat-icon>
+            <span>Switch Store</span>
+          </button>
+          
+          <mat-divider></mat-divider>
+          
+          <button mat-menu-item (click)="logout()" class="topbar__logout-btn">
+            <mat-icon>logout</mat-icon>
+            <span>Log out</span>
+          </button>
+        </mat-menu>
+      </div>
+    </div>
+  </div>
+</header>
