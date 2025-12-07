@@ -34,6 +34,7 @@ export class LoginComponent implements OnInit {
     // Check if user is already authenticated
     this.auth0.isAuthenticated$.subscribe(isAuth => {
       if (isAuth) {
+        console.log('User is authenticated, redirecting to dashboard');
         this.router.navigate(['/dashboard']);
       }
     });
@@ -41,10 +42,27 @@ export class LoginComponent implements OnInit {
 
   loginWithGoogle() {
     this.isLoading = true;
-    // Auth0 with Google connection
-    this.auth0.loginWithRedirect({
-      authorizationParams: {
-        connection: 'google-oauth2'
+    console.log('Attempting login with Google...');
+    
+    // Try direct login without specifying connection first
+    this.auth0.loginWithRedirect();
+  }
+
+  // Alternative: Try popup login for testing
+  loginWithPopup() {
+    this.isLoading = true;
+    console.log('Attempting popup login...');
+    
+    this.auth0.loginWithPopup().subscribe({
+      next: () => {
+        console.log('Login successful!');
+        this.router.navigate(['/dashboard']);
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Login error:', error);
+        this.isLoading = false;
+        alert('Login failed: ' + error.message);
       }
     });
   }

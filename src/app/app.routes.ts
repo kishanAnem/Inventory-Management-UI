@@ -17,10 +17,6 @@ export const routes: Routes = [
     loadComponent: () => import('./auth/unauthorized/unauthorized.component').then(m => m.UnauthorizedComponent)
   },
   {
-    path: 'debug',
-    loadComponent: () => import('./debug/debug.component').then(m => m.DebugComponent)
-  },
-  {
     path: 'tenant-setup',
     canActivate: [authGuard],
     loadComponent: () => import('./features/tenant-setup/tenant-setup.component').then(m => m.TenantSetupComponent)
