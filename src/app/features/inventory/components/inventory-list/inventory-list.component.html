@@ -3,10 +3,16 @@
   <div class="retail-pro-page-header">
     <div class="retail-pro-header-top">
       <h1 class="retail-pro-page-title">Products</h1>
-      <button class="retail-pro-btn retail-pro-btn--primary" (click)="openAddProductModal()">
-        <span class="btn-icon">+</span>
-        Add Product
-      </button>
+      <div class="header-actions">
+        <button class="retail-pro-btn retail-pro-btn--secondary" (click)="downloadTemplate()" title="Download Excel Template">
+          <mat-icon>description</mat-icon>
+          Template
+        </button>
+        <button class="retail-pro-btn retail-pro-btn--primary" (click)="openAddProductModal()">
+          <span class="btn-icon">+</span>
+          Add Product
+        </button>
+      </div>
     </div>
     <div class="retail-pro-search-bar">
       <input 
@@ -42,8 +48,7 @@
           <th>Price</th>
           <th>MRP</th>
           <th>Quantity</th>
-         
-          <th>Min Stock</th>
+          <th>Min Quantity</th>
           <th>Status</th>
           <th>Actions</th>
         </tr>

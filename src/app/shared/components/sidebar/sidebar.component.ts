@@ -47,11 +47,11 @@ export class SidebarComponent {
       isExpanded: false,
       children: [
         { id: 'all-products', label: 'All products', icon: '', route: '/inventory' },
-        { id: 'collections', label: 'Collections', icon: '', route: '/inventory/collections' },
-        { id: 'inventory', label: 'Inventory', icon: '', route: '/inventory/stock' },
+        // { id: 'collections', label: 'Collections', icon: '', route: '/inventory/collections' },
+        // { id: 'inventory', label: 'Inventory', icon: '', route: '/inventory/stock' },
         { id: 'purchase-orders', label: 'Purchase orders', icon: '', route: '/inventory/purchase-orders' },
-        { id: 'transfers', label: 'Transfers', icon: '', route: '/inventory/transfers' },
-        { id: 'gift-cards', label: 'Gift cards', icon: '', route: '/inventory/gift-cards' }
+        // { id: 'transfers', label: 'Transfers', icon: '', route: '/inventory/transfers' },
+        // { id: 'gift-cards', label: 'Gift cards', icon: '', route: '/inventory/gift-cards' }
       ]
     },
     {
@@ -101,6 +101,13 @@ export class SidebarComponent {
 
   toggleMenuItem(item: MenuItem) {
     if (item.children) {
+      // Close all other menu items first
+      this.menuItems.forEach(menuItem => {
+        if (menuItem.id !== item.id) {
+          menuItem.isExpanded = false;
+        }
+      });
+      // Toggle the clicked item
       item.isExpanded = !item.isExpanded;
     }
   }
@@ -113,6 +120,14 @@ export class SidebarComponent {
 
   isActiveRoute(route?: string): boolean {
     if (!route) return false;
-    return this.router.url === route || this.router.url.startsWith(route + '/');
+    return this.router.url === route;
+  }
+
+  isParentActive(item: MenuItem): boolean {
+    if (!item.children) {
+      return this.isActiveRoute(item.route);
+    }
+    // For parent with children, check if any child is active
+    return item.children.some(child => this.isActiveRoute(child.route));
   }
 }
