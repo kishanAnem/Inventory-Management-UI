@@ -15,7 +15,7 @@ require('dotenv').config({ path: envFile });
 const envVars = {
   AUTH0_DOMAIN: process.env.AUTH0_DOMAIN || 'dev-cvachw6c.us.auth0.com',
   AUTH0_CLIENT_ID: process.env.AUTH0_CLIENT_ID || 'fSIM4cwU02ZRZi3zNSutxYgukAz1yeYZ',
-  AUTH0_AUDIENCE: process.env.AUTH0_AUDIENCE || 'https://dev-cvachw6c.us.auth0.com/api/v2/',
+  AUTH0_AUDIENCE: process.env.AUTH0_AUDIENCE || 'retailpro.mbtedge.com',
   AUTH0_CALLBACK_URL: process.env.AUTH0_CALLBACK_URL || 'http://localhost:4200/callback',
   API_SERVER_URL: process.env.API_SERVER_URL || 'https://localhost:7081',
   ENVIRONMENT: environment

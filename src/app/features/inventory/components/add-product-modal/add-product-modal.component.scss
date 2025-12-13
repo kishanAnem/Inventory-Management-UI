@@ -79,6 +79,16 @@
         }
       }
       
+      // Quantity row
+      .quantity-row {
+        display: flex;
+        gap: 16px;
+        
+        .quantity-field {
+          flex: 1;
+        }
+      }
+      
       // Price and MRP row
       .price-row {
         display: flex;
