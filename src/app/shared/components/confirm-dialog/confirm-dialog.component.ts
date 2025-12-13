@@ -22,30 +22,25 @@ export interface ConfirmDialogData {
     MatIconModule
   ],
   template: `
-    <div class="retail-pro-modal-header">
-      <h2 mat-dialog-title class="retail-pro-modal-title">
-        <mat-icon class="me-2" [ngClass]="getIconClass()">{{ getIcon() }}</mat-icon>
-        {{ data.title }}
-      </h2>
-    </div>
+    <div class="shopify-dialog">
+      <div class="dialog-header">
+        <h2 class="dialog-title">{{ data.title }}</h2>
+        <button class="close-button" (click)="onCancel()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
 
-    <div mat-dialog-content class="retail-pro-modal-content">
-      <p class="mb-0">{{ data.message }}</p>
-    </div>
+      <div class="dialog-content">
+        <p>{{ data.message }}</p>
+      </div>
 
-    <div mat-dialog-actions class="retail-pro-modal-actions">
-      <div class="d-flex justify-content-end w-100 gap-2">
-        <button 
-          mat-stroked-button 
-          class="retail-pro-btn"
-          (click)="onCancel()">
+      <div class="dialog-footer">
+        <button class="btn btn-secondary" (click)="onCancel()">
           {{ data.cancelText || 'Cancel' }}
         </button>
         <button 
-          mat-raised-button 
-          [color]="getButtonColor()"
-          class="retail-pro-btn"
-          [ngClass]="getButtonClass()"
+          class="btn btn-danger" 
+          [ngClass]="{'btn-danger': data.type === 'danger', 'btn-primary': data.type !== 'danger'}"
           (click)="onConfirm()">
           {{ data.confirmText || 'Confirm' }}
         </button>
@@ -53,47 +48,115 @@ export interface ConfirmDialogData {
     </div>
   `,
   styles: [`
-    .retail-pro-modal-header {
-      padding: 1.5rem 1.5rem 0 1.5rem;
-      border-bottom: 1px solid var(--retail-border-color);
-
-      .retail-pro-modal-title {
-        display: flex;
-        align-items: center;
-        margin: 0;
-        font-size: 1.25rem;
-        font-weight: 600;
-
-        mat-icon {
-          &.text-info { color: #17a2b8; }
-          &.text-warning { color: #ffc107; }
-          &.text-danger { color: #dc3545; }
-        }
-      }
+    .shopify-dialog {
+      background: white;
+      border-radius: 8px;
+      max-width: 500px;
+      width: 100%;
     }
 
-    .retail-pro-modal-content {
-      padding: 1.5rem;
+    .dialog-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 20px 16px;
+      border-bottom: 1px solid #e5e5e5;
     }
 
-    .retail-pro-modal-actions {
-      padding: 1rem 1.5rem 1.5rem 1.5rem;
-      border-top: 1px solid var(--retail-border-color);
-
-      .gap-2 {
-        gap: 12px !important;
-      }
+    .dialog-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #202223;
+      margin: 0;
+      line-height: 24px;
     }
 
-    .retail-pro-btn-danger {
-      background-color: #dc3545;
-      border-color: #dc3545;
+    .close-button {
+      background: none;
+      border: none;
+      padding: 4px;
+      cursor: pointer;
+      color: #6d7175;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      transition: background-color 0.2s;
+    }
+
+    .close-button:hover {
+      background-color: #f6f6f7;
+    }
+
+    .close-button mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+
+    .dialog-content {
+      padding: 20px;
+      color: #6d7175;
+      font-size: 14px;
+      line-height: 20px;
+    }
+
+    .dialog-content p {
+      margin: 0;
+    }
+
+    .dialog-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      padding: 16px 20px 20px;
+      border-top: 1px solid #e5e5e5;
+    }
+
+    .btn {
+      padding: 8px 16px;
+      font-size: 14px;
+      font-weight: 500;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      line-height: 20px;
+      min-width: 80px;
+    }
+
+    .btn-secondary {
+      background: white;
+      color: #202223;
+      border: 1px solid #c9cccf;
+    }
+
+    .btn-secondary:hover {
+      background: #f6f6f7;
+      border-color: #8c9196;
+    }
+
+    .btn-primary {
+      background: #2c6ecb;
       color: white;
+    }
 
-      &:hover {
-        background-color: #c82333;
-        border-color: #bd2130;
-      }
+    .btn-primary:hover {
+      background: #1f5199;
+    }
+
+    .btn-danger {
+      background: #d82c0d;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #bf2600;
+    }
+
+    .btn:focus {
+      outline: 2px solid #005bd3;
+      outline-offset: 2px;
     }
   `]
 })

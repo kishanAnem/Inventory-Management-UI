@@ -1,5 +1,6 @@
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Component, inject, signal, computed, effect } from '@angular/core';
 import { Store } from '@ngrx/store';
 
@@ -11,6 +12,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog } from '@angular/material/dialog';
 import { AddProductModalComponent, CreateProduct } from '../add-product-modal/add-product-modal.component';
+import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 import type { InventoryItem } from '../../services/inventory.service';
 import { InventoryActions } from '../../store/inventory.actions';
 import { selectAllInventoryItems, selectInventoryLoading, selectInventoryError } from '../../store/inventory.selectors';
@@ -23,6 +25,7 @@ import { selectAllInventoryItems, selectInventoryLoading, selectInventoryError }
   imports: [
     RouterModule, 
     CommonModule,
+    FormsModule,
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
@@ -38,7 +41,21 @@ export class InventoryListComponent {
   items = signal<InventoryItem[]>([]);
   loading = signal(false);
   error = signal<any>(null);
+  searchTerm = '';
   displayedColumns: string[] = ['name', 'quantity', 'price', 'totalValue', 'actions'];
+
+  // Computed signal for filtered items
+  filteredItems = computed(() => {
+    const term = this.searchTerm.toLowerCase().trim();
+    if (!term) {
+      return this.items();
+    }
+    return this.items().filter(item => 
+      item.name.toLowerCase().includes(term) ||
+      item.description?.toLowerCase().includes(term) ||
+      item.barcode.toLowerCase().includes(term)
+    );
+  });
 
   constructor() {
     // Dispatch load action on init
@@ -52,10 +69,43 @@ export class InventoryListComponent {
     });
   }
 
+  onSearch() {
+    // Trigger change detection for computed signal
+    this.searchTerm = this.searchTerm;
+  }
+
+  editItem(product: InventoryItem) {
+    const dialogRef = this.dialog.open(AddProductModalComponent, {
+      width: '600px',
+      maxWidth: '90vw',
+      data: product
+    });
+
+    dialogRef.afterClosed().subscribe((result: InventoryItem | undefined) => {
+      if (result) {
+        // Product was successfully updated
+        this.store.dispatch(InventoryActions.loadInventory());
+      }
+    });
+  }
+
   deleteItem(id: string) {
-    if (confirm('Are you sure you want to delete this product?')) {
-      this.store.dispatch(InventoryActions.deleteItem({ id }));
-    }
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'Delete Product',
+        message: 'Are you sure you want to delete this product? This action cannot be undone.',
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+        type: 'danger'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe((confirmed: boolean) => {
+      if (confirmed) {
+        this.store.dispatch(InventoryActions.deleteItem({ id }));
+      }
+    });
   }
 
   openAddProductModal() {
@@ -105,12 +155,6 @@ export class InventoryListComponent {
     return 'An unknown error occurred';
   }
 
-  getQuantityClass(quantity: number): string {
-    if (quantity <= 5) return 'low-stock';
-    if (quantity <= 15) return 'medium-stock';
-    return 'high-stock';
-  }
-
   getStockStatus(quantity: number): string {
     if (quantity <= 5) return 'Low Stock';
     if (quantity <= 15) return 'Medium';
@@ -121,5 +165,11 @@ export class InventoryListComponent {
     if (quantity <= 5) return 'low';
     if (quantity <= 15) return 'medium';
     return 'high';
+  }
+
+  getQuantityClass(quantity: number, minimumQuantity: number): string {
+    if (quantity <= minimumQuantity) return 'low-stock';
+    if (quantity <= minimumQuantity * 1.5) return 'medium-stock';
+    return 'high-stock';
   }
 }

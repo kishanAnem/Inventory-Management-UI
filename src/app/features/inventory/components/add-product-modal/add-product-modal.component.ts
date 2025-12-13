@@ -46,46 +46,83 @@ export class AddProductModalComponent {
   private dialogRef = inject(MatDialogRef<AddProductModalComponent>);
   private inventoryService = inject(InventoryService);
   private snackBar = inject(MatSnackBar);
+  private data = inject(MAT_DIALOG_DATA, { optional: true });
   
   productForm: FormGroup;
   isSubmitting = false;
+  isEditMode = false;
+  productId?: string;
 
   constructor() {
+    this.isEditMode = !!this.data;
+    this.productId = this.data?.id;
+
     this.productForm = this.fb.group({
-      name: ['', [Validators.required, Validators.minLength(2)]],
-      description: [''],
-      barcode: ['', [Validators.required]],
-      price: [0, [Validators.required, Validators.min(0.01)]],
-      mrp: [0, [Validators.required, Validators.min(0.01)]],
-      isActive: [true]
+      name: [this.data?.name || '', [Validators.required, Validators.minLength(2)]],
+      description: [this.data?.description || ''],
+      barcode: [this.data?.barcode || '', [Validators.required]],
+      price: [this.data?.price || 0, [Validators.required, Validators.min(0.01)]],
+      mrp: [this.data?.mrp || 0, [Validators.required, Validators.min(0.01)]],
+      quantity: [this.data?.quantity || 0, [Validators.required, Validators.min(0)]],
+      minimumQuantity: [this.data?.minimumQuantity || 0, [Validators.required, Validators.min(0)]],
+      isActive: [this.data?.isActive !== undefined ? this.data.isActive : true]
     });
   }
 
   onSubmit() {
     if (this.productForm.valid && !this.isSubmitting) {
-      debugger;
       this.isSubmitting = true;
-      const productData: CreateProductRequest = this.productForm.value;
       
-      this.inventoryService.createProduct(productData).subscribe({
-        next: (createdProduct) => {
-          this.snackBar.open('Product created successfully!', 'Close', {
-            duration: 3000,
-            horizontalPosition: 'right',
-            verticalPosition: 'top'
-          });
-          this.dialogRef.close(createdProduct);
-        },
-        error: (error) => {
-          console.error('Error creating product:', error);
-          this.snackBar.open('Error creating product. Please try again.', 'Close', {
-            duration: 5000,
-            horizontalPosition: 'right',
-            verticalPosition: 'top'
-          });
-          this.isSubmitting = false;
-        }
-      });
+      if (this.isEditMode && this.productId) {
+        // Update existing product
+        const productData = {
+          id: this.productId,
+          ...this.productForm.value
+        };
+        
+        this.inventoryService.update(this.productId, productData).subscribe({
+          next: (updatedProduct) => {
+            this.snackBar.open('Product updated successfully!', 'Close', {
+              duration: 3000,
+              horizontalPosition: 'right',
+              verticalPosition: 'top'
+            });
+            this.dialogRef.close(updatedProduct);
+          },
+          error: (error) => {
+            console.error('Error updating product:', error);
+            this.snackBar.open('Error updating product. Please try again.', 'Close', {
+              duration: 5000,
+              horizontalPosition: 'right',
+              verticalPosition: 'top'
+            });
+            this.isSubmitting = false;
+          }
+        });
+      } else {
+        // Create new product
+        const productData: CreateProductRequest = this.productForm.value;
+        
+        this.inventoryService.createProduct(productData).subscribe({
+          next: (createdProduct) => {
+            this.snackBar.open('Product created successfully!', 'Close', {
+              duration: 3000,
+              horizontalPosition: 'right',
+              verticalPosition: 'top'
+            });
+            this.dialogRef.close(createdProduct);
+          },
+          error: (error) => {
+            console.error('Error creating product:', error);
+            this.snackBar.open('Error creating product. Please try again.', 'Close', {
+              duration: 5000,
+              horizontalPosition: 'right',
+              verticalPosition: 'top'
+            });
+            this.isSubmitting = false;
+          }
+        });
+      }
     } else {
       this.markFormGroupTouched();
     }

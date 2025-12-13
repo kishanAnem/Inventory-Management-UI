@@ -9,8 +9,13 @@
       </button>
     </div>
     <div class="retail-pro-search-bar">
-      <input type="text" placeholder="Search products..." class="retail-pro-input retail-pro-input--full-width">
-      <button class="retail-pro-btn retail-pro-btn--secondary">Search</button>
+      <input 
+        type="text" 
+        placeholder="Search products..." 
+        class="retail-pro-input retail-pro-input--full-width"
+        [(ngModel)]="searchTerm"
+        (input)="onSearch()">
+      <button class="retail-pro-btn retail-pro-btn--secondary" (click)="onSearch()">Search</button>
     </div>
   </div>
 
@@ -26,63 +31,58 @@
     <p>{{ getErrorMessage() }}</p>
   </div>
 
-  <!-- Products Grid -->
-  <div *ngIf="!loading() && items().length" class="retail-pro-grid retail-pro-grid--auto-fill">
-    <div *ngFor="let product of items()" class="retail-pro-card">
-      <!-- Product Image Placeholder -->
-      <div class="retail-pro-card__image">
-        <div class="retail-pro-image-placeholder">
-          <mat-icon>inventory</mat-icon>
-        </div>
-      </div>
-      
-      <!-- Product Info -->
-      <div class="retail-pro-card__body">
-        <h3 class="retail-pro-card__title">{{ product.name }}</h3>
-        <p class="retail-pro-card__subtitle">SKU: {{ product.id }}</p>
-        
-        <div class="retail-pro-grid retail-pro-grid--2-cols retail-pro-mb-base">
-          <div>
-            <span class="retail-pro-text-xs retail-pro-text-secondary retail-pro-font-medium" style="text-transform: uppercase; letter-spacing: 0.5px;">Price</span>
-            <div class="retail-pro-text-lg retail-pro-font-semibold" style="color: #00d084;">{{ product.price | currency }}</div>
-          </div>
-          
-          <div>
-            <span class="retail-pro-text-xs retail-pro-text-secondary retail-pro-font-medium" style="text-transform: uppercase; letter-spacing: 0.5px;">Stock</span>
-            <div class="retail-pro-flex retail-pro-items-center retail-pro-gap-sm">
-              <span class="retail-pro-text-lg retail-pro-font-semibold">{{ product.quantity }}</span>
-              <span class="retail-pro-badge" [ngClass]="'retail-pro-badge--' + getStockStatusClass(product.quantity)">
-                {{ getStockStatus(product.quantity) }}
-              </span>
+  <!-- Products Table -->
+  <div *ngIf="!loading() && filteredItems().length" class="table-container">
+    <table class="product-table">
+      <thead>
+        <tr>
+          <th>Product Name</th>
+          <th>Description</th>
+          <th>Barcode</th>
+          <th>Price</th>
+          <th>MRP</th>
+          <th>Quantity</th>
+         
+          <th>Min Stock</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let product of filteredItems()">
+          <td>{{ product.name }}</td>
+          <td>{{ product.description || '-' }}</td>
+          <td>{{ product.barcode }}</td>
+          <td>{{ product.price | currency }}</td>
+          <td>{{ product.mrp | currency }}</td>
+          <td>
+            <span [ngClass]="getQuantityClass(product.quantity, product.minimumQuantity)">
+              {{ product.quantity }}
+            </span>
+          </td>
+          <td>{{ product.minimumQuantity }}</td>
+          <td>
+            <span class="status-badge" [ngClass]="product.isActive ? 'active' : 'inactive'">
+              {{ product.isActive ? 'Active' : 'Inactive' }}
+            </span>
+          </td>
+          <td>
+            <div class="action-buttons">
+              <button class="btn-edit" (click)="editItem(product)" title="Edit">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button class="btn-delete" (click)="deleteItem(product.id)" title="Delete">
+                <mat-icon>delete</mat-icon>
+              </button>
             </div>
-          </div>
-        </div>
-        
-        <div class="retail-pro-p-sm" style="background: rgba(0, 91, 211, 0.05); border-radius: 8px; text-align: center; border: 1px solid rgba(0, 91, 211, 0.1);">
-          <span class="retail-pro-text-base retail-pro-font-semibold" style="color: #005bd3;">
-            Total: {{ (product.price * product.quantity) | currency }}
-          </span>
-        </div>
-      </div>
-      
-      <!-- Action Buttons -->
-      <div class="retail-pro-card__footer">
-        <div class="retail-pro-card__actions">
-          <button class="retail-pro-btn retail-pro-btn--secondary retail-pro-btn--small" [routerLink]="['/inventory/edit', product.id]">
-            <mat-icon>edit</mat-icon>
-            Edit
-          </button>
-          <button class="retail-pro-btn retail-pro-btn--danger retail-pro-btn--small" (click)="deleteItem(product.id)">
-            <mat-icon>delete</mat-icon>
-            Delete
-          </button>
-        </div>
-      </div>
-    </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 
   <!-- Empty State -->
-  <div *ngIf="!loading() && !items().length && !error()" class="retail-pro-empty">
+  <div *ngIf="!loading() && !filteredItems().length && !error()" class="retail-pro-empty">
     <div class="retail-pro-empty__icon">
       <mat-icon>shopping_cart</mat-icon>
     </div>
