@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Component, inject, signal, computed, effect } from '@angular/core';
 import { Store } from '@ngrx/store';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../../environments/environment';
 
 // Angular Material imports
 import { MatButtonModule } from '@angular/material/button';
@@ -37,6 +39,7 @@ export class InventoryListComponent {
   private store = inject(Store);
   private router = inject(Router);
   private dialog = inject(MatDialog);
+  private http = inject(HttpClient);
 
   items = signal<InventoryItem[]>([]);
   loading = signal(false);
@@ -171,5 +174,20 @@ export class InventoryListComponent {
     if (quantity <= minimumQuantity) return 'low-stock';
     if (quantity <= minimumQuantity * 1.5) return 'medium-stock';
     return 'high-stock';
+  }
+
+  downloadTemplate() {
+    const url = `${environment.apiUrl}/api/Products/template`;
+    this.http.get(url, { responseType: 'blob' }).subscribe({
+      next: (blob) => {
+        const downloadUrl = window.URL.createObjectURL(blob);
+        window.open(downloadUrl, '_blank');
+        // Revoke after a delay to ensure the new tab has loaded
+        setTimeout(() => window.URL.revokeObjectURL(downloadUrl), 1000);
+      },
+      error: (error) => {
+        console.error('Error downloading template:', error);
+      }
+    });
   }
 }

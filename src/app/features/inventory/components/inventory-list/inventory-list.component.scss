@@ -3,6 +3,24 @@
  * Component-specific overrides can be added here when needed
  */
 
+.header-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+
+  .retail-pro-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+  }
+}
+
 .table-container {
   overflow-x: auto;
   background: white;

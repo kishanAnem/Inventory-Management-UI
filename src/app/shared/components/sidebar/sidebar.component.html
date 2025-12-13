@@ -29,7 +29,7 @@
           <!-- Main Menu Item -->
           <div 
             class="sidebar__nav-link"
-            [class.sidebar__nav-link--active]="isActiveRoute(item.route)"
+            [class.sidebar__nav-link--active]="!item.children && isActiveRoute(item.route)"
             [class.sidebar__nav-link--expanded]="item.isExpanded"
             (click)="item.children ? toggleMenuItem(item) : navigateTo(item.route)">
             

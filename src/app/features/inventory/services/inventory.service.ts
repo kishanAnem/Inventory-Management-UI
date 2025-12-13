@@ -92,6 +92,16 @@ export class InventoryService {
     );
   }
 
+  bulkCreateProducts(products: CreateProductRequest[]): Observable<InventoryItem[]> {
+    return this.http.post<ApiResponse<InventoryItem[]>>(`${this.apiUrl}/addproducts`, products, { 
+      headers: this.getHeaders(),
+      withCredentials: true
+    }).pipe(
+      map(response => response.data),
+      catchError(this.handleError)
+    );
+  }
+
   update(id: string, item: InventoryItem): Observable<InventoryItem> {
     return this.http.put<ApiResponse<InventoryItem>>(`${this.apiUrl}/${id}`, item, { 
       headers: this.getHeaders(), 
