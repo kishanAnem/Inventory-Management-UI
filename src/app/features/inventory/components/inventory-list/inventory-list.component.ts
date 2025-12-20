@@ -15,6 +15,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog } from '@angular/material/dialog';
 import { AddProductModalComponent, CreateProduct } from '../add-product-modal/add-product-modal.component';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
+import { UploadProductsModalComponent } from '../upload-products-modal/upload-products-modal.component';
 import type { InventoryItem } from '../../services/inventory.service';
 import { InventoryActions } from '../../store/inventory.actions';
 import { selectAllInventoryItems, selectInventoryLoading, selectInventoryError } from '../../store/inventory.selectors';
@@ -176,13 +177,33 @@ export class InventoryListComponent {
     return 'high-stock';
   }
 
+  openUploadModal() {
+    const dialogRef = this.dialog.open(UploadProductsModalComponent, {
+      width: '550px',
+      maxWidth: '90vw',
+      disableClose: true
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        // Products were uploaded, refresh the list
+        this.store.dispatch(InventoryActions.loadInventory());
+      }
+    });
+  }
+
   downloadTemplate() {
     const url = `${environment.apiUrl}/api/Products/template`;
     this.http.get(url, { responseType: 'blob' }).subscribe({
       next: (blob) => {
         const downloadUrl = window.URL.createObjectURL(blob);
-        window.open(downloadUrl, '_blank');
-        // Revoke after a delay to ensure the new tab has loaded
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.download = 'product-template.xlsx';
+        link.target = '_blank';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
         setTimeout(() => window.URL.revokeObjectURL(downloadUrl), 1000);
       },
       error: (error) => {

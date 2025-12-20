@@ -5,8 +5,12 @@
       <h1 class="retail-pro-page-title">Products</h1>
       <div class="header-actions">
         <button class="retail-pro-btn retail-pro-btn--secondary" (click)="downloadTemplate()" title="Download Excel Template">
-          <mat-icon>description</mat-icon>
+          <mat-icon>download</mat-icon>
           Template
+        </button>
+        <button class="retail-pro-btn retail-pro-btn--secondary" (click)="openUploadModal()" title="Upload Products from Excel">
+          <mat-icon>upload</mat-icon>
+          Import
         </button>
         <button class="retail-pro-btn retail-pro-btn--primary" (click)="openAddProductModal()">
           <span class="btn-icon">+</span>
