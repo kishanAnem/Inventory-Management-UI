@@ -17,6 +17,7 @@ import { AddProductModalComponent, CreateProduct } from '../add-product-modal/ad
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { UploadProductsModalComponent } from '../upload-products-modal/upload-products-modal.component';
 import type { InventoryItem } from '../../services/inventory.service';
+import { InventoryService } from '../../services/inventory.service';
 import { InventoryActions } from '../../store/inventory.actions';
 import { selectAllInventoryItems, selectInventoryLoading, selectInventoryError } from '../../store/inventory.selectors';
 
@@ -41,6 +42,7 @@ export class InventoryListComponent {
   private router = inject(Router);
   private dialog = inject(MatDialog);
   private http = inject(HttpClient);
+  private inventoryService = inject(InventoryService);
 
   items = signal<InventoryItem[]>([]);
   loading = signal(false);
@@ -208,6 +210,25 @@ export class InventoryListComponent {
       },
       error: (error) => {
         console.error('Error downloading template:', error);
+      }
+    });
+  }
+
+  exportProducts() {
+    this.inventoryService.exportProducts().subscribe({
+      next: (blob) => {
+        const downloadUrl = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.download = `products-export-${new Date().toISOString().split('T')[0]}.xlsx`;
+        link.target = '_blank';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(() => window.URL.revokeObjectURL(downloadUrl), 1000);
+      },
+      error: (error) => {
+        console.error('Error exporting products:', error);
       }
     });
   }

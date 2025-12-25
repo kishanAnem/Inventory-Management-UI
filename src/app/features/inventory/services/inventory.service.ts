@@ -121,6 +121,15 @@ export class InventoryService {
     );
   }
 
+  exportProducts(): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/export`, {
+      responseType: 'blob',
+      withCredentials: true
+    }).pipe(
+      catchError(this.handleError)
+    );
+  }
+
   private handleError = (error: HttpErrorResponse) => {
     let errorMessage = 'An unknown error occurred';
     if (error.error instanceof ErrorEvent) {
