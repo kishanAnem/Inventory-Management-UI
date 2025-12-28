@@ -2,7 +2,7 @@
 import { Routes, RouterModule } from '@angular/router';
 
 import { InventoryListComponent } from './components/inventory-list/inventory-list.component';
-import { InventoryDetailComponent } from './components/inventory-detail/inventory-detail.component';
+import { PurchaseOrderComponent } from './components/purchase-order/purchase-order.component';
 import { InventoryFormComponent } from './components/inventory-form/inventory-form.component';
 
 
@@ -21,7 +21,7 @@ const routes: Routes = [
   },
   {
     path: ':id',
-    loadComponent: () => import('./components/inventory-detail/inventory-detail.component').then(m => m.InventoryDetailComponent)
+    loadComponent: () => import('./components/purchase-order/purchase-order.component').then(m => m.PurchaseOrderComponent)
   }
 ];
 
