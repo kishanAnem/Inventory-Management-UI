@@ -1,0 +1,100 @@
+<div class="retail-pro-container">
+  <!-- Header Section with Search -->
+  <div class="retail-pro-page-header">
+    <div class="retail-pro-header-top">
+      <h1 class="retail-pro-page-title">Purchase Orders</h1>
+      <div class="header-actions">
+        <button class="retail-pro-btn retail-pro-btn--secondary" (click)="downloadTemplate()" title="Download Excel Template">
+          <mat-icon>download</mat-icon>
+          Template
+        </button>
+        <button class="retail-pro-btn retail-pro-btn--secondary" (click)="openUploadModal()" title="Upload Purchase Orders from Excel">
+          <mat-icon>upload</mat-icon>
+          Import
+        </button>
+        <button class="retail-pro-btn retail-pro-btn--primary" (click)="createPurchaseOrder()">
+          <span class="btn-icon">+</span>
+          New Purchase Order
+        </button>
+      </div>
+    </div>
+    <div class="retail-pro-search-bar">
+      <input 
+        type="text" 
+        placeholder="Search purchase orders..." 
+        class="retail-pro-input retail-pro-input--full-width"
+        [(ngModel)]="searchTerm"
+        (input)="onSearch()">
+      <button class="retail-pro-btn retail-pro-btn--secondary" (click)="onSearch()">Search</button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading()" class="retail-pro-loading">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>Loading purchase orders...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error()" class="retail-pro-error">
+    <mat-icon>warning</mat-icon>
+    <p>{{ error() }}</p>
+  </div>
+
+  <!-- Purchase Orders Table -->
+  <div *ngIf="!loading() && purchaseOrders().length" class="table-container">
+    <table class="purchase-order-table">
+      <thead>
+        <tr>
+          <th>Tenant ID</th>
+          <th>Product ID</th>
+          <th>Qty Remaining</th>
+          <th>Unit Cost</th>
+          <th>Purchase Date</th>
+          <th>PO Number</th>
+          <th>Supplier Name</th>
+          <th>Expiry Date</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let order of purchaseOrders()">
+          <td>{{ order.tenantId }}</td>
+          <td>{{ order.productId }}</td>
+          <td>{{ order.qtyRemaining }}</td>
+          <td>{{ order.unitCost | currency }}</td>
+          <td>{{ order.purchaseDate | date }}</td>
+          <td>{{ order.poNumber }}</td>
+          <td>{{ order.supplierName }}</td>
+          <td>{{ order.expiryDate | date }}</td>
+          <td>
+            <div class="action-buttons">
+              <button class="btn-view" (click)="viewOrder(order)" title="View">
+                <mat-icon>visibility</mat-icon>
+              </button>
+              <button class="btn-edit" (click)="editOrder(order)" title="Edit">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button class="btn-delete" (click)="deleteOrder(order.id)" title="Delete">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!loading() && !purchaseOrders().length && !error()" class="retail-pro-empty">
+    <div class="retail-pro-empty__icon">
+      <mat-icon>shopping_bag</mat-icon>
+    </div>
+    <h2 class="retail-pro-empty__title">No purchase orders found</h2>
+    <p class="retail-pro-empty__description">Get started by creating your first purchase order</p>
+    <button class="retail-pro-btn retail-pro-btn--primary retail-pro-btn--large" (click)="createPurchaseOrder()">
+      <span class="btn-icon">+</span>
+      Create Your First Purchase Order
+    </button>
+  </div>
+</div>

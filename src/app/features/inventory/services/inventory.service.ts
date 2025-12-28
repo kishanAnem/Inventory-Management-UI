@@ -130,6 +130,19 @@ export class InventoryService {
     );
   }
 
+  uploadPurchaseOrders(file: File): Observable<{ success: boolean; message: string; data: any }> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    return this.http.post<{ success: boolean; message: string; data: any }>(
+      `${this.apiUrl}/purchase-orders/upload`,
+      formData,
+      { withCredentials: true }
+    ).pipe(
+      catchError(this.handleError)
+    );
+  }
+
   private handleError = (error: HttpErrorResponse) => {
     let errorMessage = 'An unknown error occurred';
     if (error.error instanceof ErrorEvent) {
