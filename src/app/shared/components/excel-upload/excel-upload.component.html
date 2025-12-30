@@ -1,0 +1,142 @@
+<div class="excel-upload">
+  <!-- Upload Area -->
+  @if (!uploadResult()) {
+    <div 
+      class="upload-area"
+      [class.drag-over]="isDragOver()"
+      [class.has-file]="selectedFile()"
+      (dragover)="onDragOver($event)"
+      (dragleave)="onDragLeave($event)"
+      (drop)="onDrop($event)">
+      
+      @if (!selectedFile()) {
+        <div class="upload-prompt">
+          <mat-icon class="upload-icon">cloud_upload</mat-icon>
+          <h3>Drag and drop your Excel file here</h3>
+          <p>or</p>
+          <label class="file-select-btn">
+            <input 
+              type="file" 
+              [accept]="config.acceptedFormats"
+              (change)="onFileSelected($event)"
+              hidden>
+            Browse Files
+          </label>
+          <p class="file-hint">Supported formats: {{ config.acceptedFormats }}</p>
+        </div>
+      } @else {
+        <div class="selected-file">
+          <div class="file-info">
+            <mat-icon class="file-icon">description</mat-icon>
+            <div class="file-details">
+              <span class="file-name">{{ selectedFile()?.name }}</span>
+              <span class="file-size">{{ formatFileSize(selectedFile()?.size || 0) }}</span>
+            </div>
+          </div>
+          <button class="remove-file-btn" (click)="removeFile()" [disabled]="isUploading()">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+      }
+    </div>
+
+    <!-- Error Message -->
+    @if (errorMessage()) {
+      <div class="error-message">
+        <mat-icon>error</mat-icon>
+        <span>{{ errorMessage() }}</span>
+      </div>
+    }
+
+    <!-- Upload Progress -->
+    @if (isUploading()) {
+      <div class="upload-progress">
+        <mat-spinner diameter="24"></mat-spinner>
+        <span>Uploading...</span>
+      </div>
+    }
+  }
+
+  <!-- Upload Result -->
+  @if (uploadResult()) {
+    <div class="upload-result">
+      <div class="result-summary">
+        @if (uploadResult()!.successCount > 0) {
+          <div class="result-item success">
+            <mat-icon>check_circle</mat-icon>
+            <span>{{ uploadResult()!.successCount }} items imported successfully</span>
+          </div>
+        }
+        @if (uploadResult()!.failureCount > 0) {
+          <div class="result-item error">
+            <mat-icon>error</mat-icon>
+            <span>{{ uploadResult()!.failureCount }} items failed to import</span>
+          </div>
+        }
+      </div>
+
+      <!-- Display failed results if available -->
+      @if (getFailedResults().length > 0) {
+        <div class="error-list">
+          <h4>Failed Items:</h4>
+          <ul>
+            @for (result of getFailedResults(); track result.productId || $index) {
+              <li>
+                @if (result.productId) {
+                  <strong>Product ID:</strong> {{ result.productId }}
+                }
+                @if (result.productName) {
+                  <span> - {{ result.productName }}</span>
+                }
+                @if (result.error) {
+                  <br><span class="error-detail">{{ result.error }}</span>
+                }
+              </li>
+            }
+          </ul>
+        </div>
+      }
+
+      <!-- Display error messages if available -->
+      @if (uploadResult()!.errors && uploadResult()!.errors!.length > 0) {
+        <div class="error-list">
+          <h4>Errors:</h4>
+          <ul>
+            @for (error of uploadResult()!.errors; track error) {
+              <li>{{ error }}</li>
+            }
+          </ul>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Action Buttons -->
+  <div class="upload-actions">
+    @if (!uploadResult()) {
+      <button class="btn btn-secondary" (click)="cancel.emit()">
+        Cancel
+      </button>
+      <button 
+        class="btn btn-primary" 
+        (click)="triggerUpload()" 
+        [disabled]="!selectedFile() || isUploading()">
+        @if (isUploading()) {
+          <mat-spinner diameter="18"></mat-spinner>
+          Uploading...
+        } @else {
+          <mat-icon>upload</mat-icon>
+          Upload
+        }
+      </button>
+    } @else {
+      <button class="btn btn-secondary" (click)="resetUpload()">
+        <mat-icon>refresh</mat-icon>
+        Upload Another File
+      </button>
+      <button class="btn btn-primary" (click)="close.emit(uploadResult())">
+        Done
+      </button>
+    }
+  </div>
+</div>

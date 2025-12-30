@@ -1,10 +1,9 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
-import { environment } from '../../../../../environments/environment';
 import { MatDialog } from '@angular/material/dialog';
 import { UploadPurchaseOrdersModalComponent } from '../upload-purchase-orders-modal/upload-purchase-orders-modal.component';
+import { InventoryService } from '../../services/inventory.service';
 
 // Angular Material imports
 import { MatButtonModule } from '@angular/material/button';
@@ -37,7 +36,7 @@ interface PurchaseOrder {
   styleUrl: './purchase-order.component.scss'
 })
 export class PurchaseOrderComponent {
-  private http = inject(HttpClient);
+  private inventoryService = inject(InventoryService);
   private dialog = inject(MatDialog);
   
   purchaseOrders = signal<PurchaseOrder[]>([]);
@@ -46,18 +45,9 @@ export class PurchaseOrderComponent {
   searchTerm = '';
 
   downloadTemplate() {
-    const url = `${environment.apiUrl}/api/Products/purchase-orders/template`;
-    this.http.get(url, { responseType: 'blob' }).subscribe({
+    this.inventoryService.downloadPurchaseOrderTemplate().subscribe({
       next: (blob) => {
-        const downloadUrl = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = downloadUrl;
-        link.download = 'purchase-order-template.xlsx';
-        link.target = '_blank';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        setTimeout(() => window.URL.revokeObjectURL(downloadUrl), 1000);
+        this.inventoryService.triggerFileDownload(blob, 'purchase-order-template.xlsx');
       },
       error: (error) => {
         console.error('Error downloading template:', error);
