@@ -43,6 +43,30 @@
   .modal-content {
     padding: 0;
     
+    .error-message {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 20px;
+      padding: 12px 16px;
+      background: #fef3f2;
+      border-radius: 6px;
+      color: #d82c0d;
+      font-size: 14px;
+      border: 1px solid #fecdca;
+
+      mat-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+        flex-shrink: 0;
+      }
+
+      span {
+        flex: 1;
+      }
+    }
+    
     .product-form {
       display: flex;
       flex-direction: column;

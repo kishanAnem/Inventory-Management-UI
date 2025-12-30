@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
@@ -52,6 +52,8 @@ export class AddProductModalComponent {
   isSubmitting = false;
   isEditMode = false;
   productId?: string;
+  errorMessage = signal<string | null>(null);
+  successMessage = signal<string | null>(null);
 
   constructor() {
     this.isEditMode = !!this.data;
@@ -72,6 +74,8 @@ export class AddProductModalComponent {
   onSubmit() {
     if (this.productForm.valid && !this.isSubmitting) {
       this.isSubmitting = true;
+      this.errorMessage.set(null);
+      this.successMessage.set(null);
       
       if (this.isEditMode && this.productId) {
         // Update existing product
@@ -82,6 +86,7 @@ export class AddProductModalComponent {
         
         this.inventoryService.update(this.productId, productData).subscribe({
           next: (updatedProduct) => {
+            this.successMessage.set('Product updated successfully!');
             this.snackBar.open('Product updated successfully!', 'Close', {
               duration: 3000,
               horizontalPosition: 'right',
@@ -91,11 +96,8 @@ export class AddProductModalComponent {
           },
           error: (error) => {
             console.error('Error updating product:', error);
-            this.snackBar.open('Error updating product. Please try again.', 'Close', {
-              duration: 5000,
-              horizontalPosition: 'right',
-              verticalPosition: 'top'
-            });
+            const errorMsg = error?.error?.message || error?.message || 'Error updating product. Please try again.';
+            this.errorMessage.set(errorMsg);
             this.isSubmitting = false;
           }
         });
@@ -105,6 +107,7 @@ export class AddProductModalComponent {
         
         this.inventoryService.createProduct(productData).subscribe({
           next: (createdProduct) => {
+            this.successMessage.set('Product created successfully!');
             this.snackBar.open('Product created successfully!', 'Close', {
               duration: 3000,
               horizontalPosition: 'right',
@@ -114,11 +117,8 @@ export class AddProductModalComponent {
           },
           error: (error) => {
             console.error('Error creating product:', error);
-            this.snackBar.open('Error creating product. Please try again.', 'Close', {
-              duration: 5000,
-              horizontalPosition: 'right',
-              verticalPosition: 'top'
-            });
+            const errorMsg = error?.error?.message || error?.message || 'Error creating product. Please try again.';
+            this.errorMessage.set(errorMsg);
             this.isSubmitting = false;
           }
         });

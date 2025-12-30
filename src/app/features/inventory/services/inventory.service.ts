@@ -130,6 +130,27 @@ export class InventoryService {
     );
   }
 
+  downloadPurchaseOrderTemplate(): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/export`, {
+      responseType: 'blob',
+      withCredentials: true
+    }).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  triggerFileDownload(blob: Blob, filename: string): void {
+    const downloadUrl = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = filename;
+    link.target = '_blank';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(() => window.URL.revokeObjectURL(downloadUrl), 1000);
+  }
+
   uploadPurchaseOrders(file: File): Observable<{ success: boolean; message: string; data: any }> {
     const formData = new FormData();
     formData.append('file', file);

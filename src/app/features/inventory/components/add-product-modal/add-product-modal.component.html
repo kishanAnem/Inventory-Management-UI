@@ -7,6 +7,14 @@
   </div>
 
   <div mat-dialog-content class="modal-content">
+    <!-- Error Message -->
+    @if (errorMessage()) {
+      <div class="error-message">
+        <mat-icon>error</mat-icon>
+        <span>{{ errorMessage() }}</span>
+      </div>
+    }
+
     <form [formGroup]="productForm" class="product-form">
       
       <!-- Product Name -->
