@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { UploadPurchaseOrdersModalComponent } from '../upload-purchase-orders-modal/upload-purchase-orders-modal.component';
+import { AddPurchaseOrderModalComponent } from '../add-purchase-order-modal/add-purchase-order-modal.component';
 import { InventoryService } from '../../services/inventory.service';
 
 // Angular Material imports
@@ -89,8 +90,19 @@ export class PurchaseOrderComponent {
   }
 
   createPurchaseOrder() {
-    // TODO: Implement create purchase order
-    console.log('Create purchase order');
+    const dialogRef = this.dialog.open(AddPurchaseOrderModalComponent, {
+      width: '600px',
+      maxWidth: '90vw',
+      disableClose: false
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        // Purchase order was created, refresh the list or add to local array
+        console.log('Created purchase order:', result);
+        // TODO: Refresh purchase orders list or update local data
+      }
+    });
   }
 
   viewOrder(order: PurchaseOrder) {

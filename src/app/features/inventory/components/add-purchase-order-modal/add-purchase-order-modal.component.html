@@ -1,0 +1,137 @@
+<div class="add-purchase-order-modal">
+  <div mat-dialog-title class="modal-header">
+    <h2>Add Purchase Order</h2>
+    <button mat-icon-button (click)="onCancel()" class="close-button">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <div mat-dialog-content class="modal-content">
+    <!-- Error Message -->
+    @if (errorMessage()) {
+      <div class="error-message">
+        <mat-icon>error</mat-icon>
+        <span>{{ errorMessage() }}</span>
+      </div>
+    }
+
+    <form [formGroup]="purchaseOrderForm" class="purchase-order-form">
+      
+      <!-- Product ID -->
+      <mat-form-field appearance="outline" class="full-width mt-3">
+        <mat-label>Product ID</mat-label>
+        <input matInput formControlName="productId" placeholder="Enter product ID" />
+        <mat-icon matSuffix>inventory_2</mat-icon>
+        <mat-error *ngIf="purchaseOrderForm.get('productId')?.invalid && purchaseOrderForm.get('productId')?.touched">
+          {{ getErrorMessage('productId') }}
+        </mat-error>
+      </mat-form-field>
+
+      <!-- PO Number with Generate Button -->
+      <div class="po-number-section">
+        <mat-form-field appearance="outline" class="po-number-input">
+          <mat-label>PO Number</mat-label>
+          <input matInput formControlName="poNumber" placeholder="Enter PO number" />
+          <mat-icon matSuffix>receipt</mat-icon>
+          <mat-error *ngIf="purchaseOrderForm.get('poNumber')?.invalid && purchaseOrderForm.get('poNumber')?.touched">
+            {{ getErrorMessage('poNumber') }}
+          </mat-error>
+        </mat-form-field>
+        <button type="button" mat-raised-button color="accent" 
+                class="generate-btn" 
+                (click)="generatePONumber()">
+          <mat-icon>auto_awesome</mat-icon>
+          Generate
+        </button>
+      </div>
+
+      <!-- Supplier Name -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Supplier Name</mat-label>
+        <input matInput formControlName="supplierName" placeholder="Enter supplier name" />
+        <mat-icon matSuffix>local_shipping</mat-icon>
+        <mat-error *ngIf="purchaseOrderForm.get('supplierName')?.invalid && purchaseOrderForm.get('supplierName')?.touched">
+          {{ getErrorMessage('supplierName') }}
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Quantity and Unit Cost Row -->
+      <div class="quantity-cost-row">
+        <mat-form-field appearance="outline" class="quantity-field">
+          <mat-label>Quantity Ordered</mat-label>
+          <input matInput 
+                 type="number" 
+                 formControlName="qtyOrdered" 
+                 placeholder="0"
+                 min="1"
+                 step="1">
+          <mat-icon matSuffix>inventory</mat-icon>
+          <mat-error *ngIf="purchaseOrderForm.get('qtyOrdered')?.invalid && purchaseOrderForm.get('qtyOrdered')?.touched">
+            {{ getErrorMessage('qtyOrdered') }}
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="cost-field">
+          <mat-label>Unit Cost</mat-label>
+          <input matInput 
+                 type="number" 
+                 formControlName="unitCost" 
+                 placeholder="0.00"
+                 min="0.01"
+                 step="0.01">
+          <span matTextPrefix>₹&nbsp;</span>
+          <mat-error *ngIf="purchaseOrderForm.get('unitCost')?.invalid && purchaseOrderForm.get('unitCost')?.touched">
+            {{ getErrorMessage('unitCost') }}
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <!-- Purchase Date and Expiry Date Row -->
+      <div class="date-row">
+        <mat-form-field appearance="outline" class="date-field">
+          <mat-label>Purchase Date</mat-label>
+          <input matInput 
+                 [matDatepicker]="purchasePicker" 
+                 formControlName="purchaseDate">
+          <mat-datepicker-toggle matIconSuffix [for]="purchasePicker"></mat-datepicker-toggle>
+          <mat-datepicker #purchasePicker></mat-datepicker>
+          <mat-error *ngIf="purchaseOrderForm.get('purchaseDate')?.invalid && purchaseOrderForm.get('purchaseDate')?.touched">
+            {{ getErrorMessage('purchaseDate') }}
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="date-field">
+          <mat-label>Expiry Date (Optional)</mat-label>
+          <input matInput 
+                 [matDatepicker]="expiryPicker" 
+                 formControlName="expiryDate"
+                 [min]="minDate">
+          <mat-datepicker-toggle matIconSuffix [for]="expiryPicker"></mat-datepicker-toggle>
+          <mat-datepicker #expiryPicker></mat-datepicker>
+        </mat-form-field>
+      </div>
+
+      <!-- Total Cost Display -->
+      <div class="total-cost-display" *ngIf="purchaseOrderForm.get('qtyOrdered')?.value && purchaseOrderForm.get('unitCost')?.value">
+        <div class="total-label">Total Cost:</div>
+        <div class="total-value">
+          ₹{{ (purchaseOrderForm.get('qtyOrdered')?.value * purchaseOrderForm.get('unitCost')?.value).toFixed(2) }}
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <div mat-dialog-actions class="modal-actions">
+    <button mat-button (click)="onCancel()" [disabled]="isSubmitting">
+      Cancel
+    </button>
+    <button mat-raised-button 
+            color="primary" 
+            (click)="onSubmit()" 
+            [disabled]="isSubmitting || purchaseOrderForm.invalid">
+      <mat-icon *ngIf="!isSubmitting">save</mat-icon>
+      <mat-icon *ngIf="isSubmitting" class="spinner">sync</mat-icon>
+      {{ isSubmitting ? 'Creating...' : 'Create Purchase Order' }}
+    </button>
+  </div>
+</div>

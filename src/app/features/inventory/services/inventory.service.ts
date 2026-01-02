@@ -27,6 +27,29 @@ export interface CreateProductRequest {
   isActive: boolean;
 }
 
+export interface CreatePurchaseOrderRequest {
+  productId: string;
+  qtyOrdered: number;
+  unitCost: number;
+  purchaseDate: string;
+  poNumber: string;
+  supplierName: string;
+  expiryDate?: string;
+}
+
+export interface PurchaseOrder {
+  id: string;
+  tenantId: string;
+  productId: string;
+  qtyOrdered: number;
+  qtyRemaining: number;
+  unitCost: number;
+  purchaseDate: string;
+  poNumber: string;
+  supplierName: string;
+  expiryDate?: string;
+}
+
 export interface ApiResponse<T> {
   success: boolean;
   message: string | null;
@@ -160,6 +183,20 @@ export class InventoryService {
       formData,
       { withCredentials: true }
     ).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  createPurchaseOrder(purchaseOrder: CreatePurchaseOrderRequest): Observable<PurchaseOrder> {
+    return this.http.post<ApiResponse<PurchaseOrder>>(
+      `${this.apiUrl}/purchase-order`, 
+      purchaseOrder, 
+      { 
+        headers: this.getHeaders(),
+        withCredentials: true 
+      }
+    ).pipe(
+      map(response => response.data),
       catchError(this.handleError)
     );
   }

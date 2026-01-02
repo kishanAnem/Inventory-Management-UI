@@ -13,23 +13,42 @@ import { MatIconModule } from '@angular/material/icon';
   styleUrl: './callback.component.scss'
 })
 export class CallbackComponent implements OnInit {
-  error = false;
-
   constructor(
     private auth: AuthService,
     private router: Router
   ) {}
 
   ngOnInit() {
+    // Check if there are query params (callback from Auth0)
+    const urlParams = new URLSearchParams(window.location.search);
+    const hasAuthParams = urlParams.has('code') || urlParams.has('error');
+    
+    if (!hasAuthParams) {
+      // No auth params, redirect to login
+      this.router.navigate(['/login']);
+      return;
+    }
+
     //Handle the authentication callback
     this.auth.handleRedirectCallback().subscribe({
       next: () => {
         // Successful authentication - redirect to dashboard
         this.redirectToDashboard();
       },
-      error: () => {
-        // Authentication error
-        this.error = true;
+      error: (err) => {
+        // Authentication error - log for debugging
+        console.error('Authentication callback error:', err);
+        console.error('Error details:', {
+          error: err.error,
+          error_description: err.error_description,
+          message: err.message
+        });
+        
+        // Clear any stale auth state from localStorage
+        this.clearAuthCache();
+        
+        // Redirect to login page
+        this.router.navigate(['/login']);
       }
     });
   }
@@ -39,9 +58,13 @@ export class CallbackComponent implements OnInit {
     this.router.navigate(['/dashboard']);
   }
 
-  retry() {
-    this.error = false;
-    // Redirect to login
-    this.auth.loginWithRedirect();
+  private clearAuthCache() {
+    // Clear Auth0 cache from localStorage
+    const keys = Object.keys(localStorage);
+    keys.forEach(key => {
+      if (key.startsWith('@@auth0spajs@@') || key.startsWith('a0.spajs')) {
+        localStorage.removeItem(key);
+      }
+    });
   }
 }
