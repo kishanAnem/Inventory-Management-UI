@@ -26,6 +26,8 @@ export const appConfig: ApplicationConfig = {
         redirect_uri: environment.auth0.redirectUri,
         scope: 'openid profile email'
       },
+      cacheLocation: 'localstorage', // Use localStorage instead of memory
+      useRefreshTokens: true, // Enable refresh tokens for better session management
       httpInterceptor: {
         allowedList: [
           {
