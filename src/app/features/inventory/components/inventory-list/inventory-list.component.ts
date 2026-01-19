@@ -1,19 +1,18 @@
-import { Router, RouterModule } from '@angular/router';
+import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Component, inject, signal, computed, effect } from '@angular/core';
+import { Component, inject, signal, computed, effect, OnInit, OnDestroy } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../../environments/environment';
+import { filter, Subscription } from 'rxjs';
 
-// Angular Material imports
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog } from '@angular/material/dialog';
-import { AddProductModalComponent, CreateProduct } from '../add-product-modal/add-product-modal.component';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { UploadProductsModalComponent } from '../upload-products-modal/upload-products-modal.component';
 import type { InventoryItem } from '../../services/inventory.service';
@@ -37,7 +36,7 @@ import { selectAllInventoryItems, selectInventoryLoading, selectInventoryError }
     MatTooltipModule
   ]
 })
-export class InventoryListComponent {
+export class InventoryListComponent implements OnInit, OnDestroy {
   private store = inject(Store);
   private router = inject(Router);
   private dialog = inject(MatDialog);
@@ -49,6 +48,7 @@ export class InventoryListComponent {
   error = signal<any>(null);
   searchTerm = '';
   displayedColumns: string[] = ['name', 'quantity', 'price', 'totalValue', 'actions'];
+  private routerSubscription?: Subscription;
 
   // Computed signal for filtered items
   filteredItems = computed(() => {
@@ -75,24 +75,27 @@ export class InventoryListComponent {
     });
   }
 
+  ngOnInit() {
+    // Reload inventory when navigating back to this route
+    this.routerSubscription = this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd),
+      filter((event: NavigationEnd) => event.url === '/inventory' || event.url === '/inventory/')
+    ).subscribe(() => {
+      this.store.dispatch(InventoryActions.loadInventory());
+    });
+  }
+
+  ngOnDestroy() {
+    this.routerSubscription?.unsubscribe();
+  }
+
   onSearch() {
     // Trigger change detection for computed signal
     this.searchTerm = this.searchTerm;
   }
 
   editItem(product: InventoryItem) {
-    const dialogRef = this.dialog.open(AddProductModalComponent, {
-      width: '600px',
-      maxWidth: '90vw',
-      data: product
-    });
-
-    dialogRef.afterClosed().subscribe((result: InventoryItem | undefined) => {
-      if (result) {
-        // Product was successfully updated
-        this.store.dispatch(InventoryActions.loadInventory());
-      }
-    });
+    this.router.navigate(['/inventory/product/edit', product.id]);
   }
 
   deleteItem(id: string) {
@@ -114,22 +117,8 @@ export class InventoryListComponent {
     });
   }
 
-  openAddProductModal() {
-    const dialogRef = this.dialog.open(AddProductModalComponent);
-    // , {
-    //   width: '600px',
-    //   maxWidth: '90vw',
-    //   disableClose: true,
-    //   autoFocus: true
-    // });
-
-    dialogRef.afterClosed().subscribe((result: InventoryItem | undefined) => {
-      if (result) {
-        // Product was successfully created by the modal
-        // Refresh the inventory list
-        this.store.dispatch(InventoryActions.loadInventory());
-      }
-    });
+  navigateAddProduct() {
+    this.router.navigate(['/inventory/product/add']);
   }
 
   getErrorMessage(): string {

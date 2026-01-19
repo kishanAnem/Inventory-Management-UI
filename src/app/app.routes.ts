@@ -31,12 +31,7 @@ export const routes: Routes = [
   {
     path: 'inventory',
     canActivate: [authGuard],
-    loadComponent: () => import('./features/inventory/components/inventory-list/inventory-list.component').then(m => m.InventoryListComponent)
-  },
-  {
-    path: 'inventory/:id',
-    canActivate: [authGuard],
-    loadComponent: () => import('./features/inventory/components/purchase-order/purchase-order.component').then(m => m.PurchaseOrderComponent)
+    loadChildren: () => import('./features/inventory/inventory-routing.module').then(m => m.inventoryRoutes)
   },
   
   // Default redirects

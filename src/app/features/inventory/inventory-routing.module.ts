@@ -1,15 +1,18 @@
 
-import { Routes, RouterModule } from '@angular/router';
+import { Routes } from '@angular/router';
 
-import { InventoryListComponent } from './components/inventory-list/inventory-list.component';
-import { PurchaseOrderComponent } from './components/purchase-order/purchase-order.component';
-import { InventoryFormComponent } from './components/inventory-form/inventory-form.component';
-
-
-const routes: Routes = [
+export const inventoryRoutes: Routes = [
   {
     path: '',
     loadComponent: () => import('./components/inventory-list/inventory-list.component').then(m => m.InventoryListComponent)
+  },
+  {
+    path: 'product/add',
+    loadComponent: () => import('./components/add-product/add-product.component').then(m => m.AddProductComponent)
+  },
+  {
+    path: 'product/edit/:id',
+    loadComponent: () => import('./components/add-product/add-product.component').then(m => m.AddProductComponent)
   },
   {
     path: 'add',
@@ -25,4 +28,5 @@ const routes: Routes = [
   }
 ];
 
-export const InventoryRoutingModule = RouterModule.forChild(routes);
+// Keep the RouterModule export for backward compatibility if needed
+export const InventoryRoutingModule = inventoryRoutes;
