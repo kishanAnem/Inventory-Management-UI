@@ -14,6 +14,10 @@ export interface InventoryItem {
   quantity: number;
   minimumQuantity: number;
   isActive: boolean;
+  categoryId?: string;
+  categoryName?: string;
+  subCategoryId?: string;
+  subCategoryName?: string;
 }
 
 export interface CreateProductRequest {
@@ -25,6 +29,8 @@ export interface CreateProductRequest {
   quantity: number;
   minimumQuantity: number;
   isActive: boolean;
+  categoryId?: string;
+  subCategoryId?: string;
 }
 
 export interface CreatePurchaseOrderRequest {
