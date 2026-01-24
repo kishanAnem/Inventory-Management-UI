@@ -45,6 +45,7 @@ export class InventoryListComponent implements OnInit, OnDestroy {
 
   items = signal<InventoryItem[]>([]);
   loading = signal(false);
+  downloadLoading = signal(false);
   error = signal<any>(null);
   searchTerm = '';
   displayedColumns: string[] = ['name', 'quantity', 'price', 'totalValue', 'actions'];
@@ -184,8 +185,8 @@ export class InventoryListComponent implements OnInit, OnDestroy {
   }
 
   downloadTemplate() {
-    const url = `${environment.apiUrl}/api/Products/template`;
-    this.http.get(url, { responseType: 'blob' }).subscribe({
+    this.downloadLoading.set(true);
+    this.inventoryService.downloadTemplate().subscribe({
       next: (blob) => {
         const downloadUrl = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
@@ -196,9 +197,11 @@ export class InventoryListComponent implements OnInit, OnDestroy {
         link.click();
         document.body.removeChild(link);
         setTimeout(() => window.URL.revokeObjectURL(downloadUrl), 1000);
+        this.downloadLoading.set(false);
       },
       error: (error) => {
         console.error('Error downloading template:', error);
+        this.downloadLoading.set(false);
       }
     });
   }

@@ -21,14 +21,30 @@ $colors: (
   text-inverse: #ffffff,
   
   // Brand colors
-  brand-green: #00d084,
-  brand-primary: #5c6ac4,
+  brand-green: #aee9d1,
+  brand-primary: #007f5f,
   
   // Status colors
   status-active: #aee9d1,
   status-active-text: #007f5f,
+  status-inactive: #f8d7da,
+  status-inactive-text: #721c24,
   status-draft: #e4e5e7,
   status-archived: #ffc453,
+  status-archived-text: #8a4a00,
+  
+  // Action button colors
+  action-edit-bg: #aee9d1,
+  action-edit-text: #007f5f,
+  action-edit-hover: #aee9d1,
+  action-delete-bg: #ffebee,
+  action-delete-text: #d32f2f,
+  action-delete-hover: #ffcdd2,
+  
+  // Stock level colors
+  stock-low: #d32f2f,
+  stock-medium: #f57c00,
+  stock-high: #388e3c,
   
   // Border colors
   border-light: #e1e3e5,
@@ -36,9 +52,30 @@ $colors: (
   border-dark: #8c9196,
   
   // Interactive colors
-  interactive-default: #005bd3,
-  interactive-hover: #0053c5,
-  interactive-pressed: #004db5,
+  interactive-default: #007f5f,
+  interactive-hover: #007f5f,
+  interactive-pressed: #007f5f,
+  
+  // Primary theme colors (Green - matching retail-pro-btn--primary)
+  primary: #008060,
+  primary-hover: #006b52,
+  primary-pressed: #005744,
+  
+  // Form colors
+  form-bg: #fafafa,
+  form-border: #d1d5db,
+  form-border-hover: #9ca3af,
+  form-text: #111827,
+  form-text-secondary: #374151,
+  form-text-muted: #6b7280,
+  form-placeholder: #9ca3af,
+  form-disabled-bg: #f9fafb,
+  form-hover-bg: #f3f4f6,
+  
+  // Error colors
+  error: #dc2626,
+  error-bg: #fef2f2,
+  error-border: #fecaca,
 );
 
 // Typography
@@ -82,6 +119,68 @@ $shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
 // ================================
 // Global Base Styles
 // ================================
+
+:root {
+  // Export color variables as CSS custom properties
+  --bg-primary: #{map-get($colors, bg-primary)};
+  --bg-secondary: #{map-get($colors, bg-secondary)};
+  --bg-sidebar: #{map-get($colors, bg-sidebar)};
+  --bg-dark: #{map-get($colors, bg-dark)};
+  --bg-hover: #{map-get($colors, bg-hover)};
+  
+  --text-primary: #{map-get($colors, text-primary)};
+  --text-secondary: #{map-get($colors, text-secondary)};
+  --text-tertiary: #{map-get($colors, text-tertiary)};
+  --text-inverse: #{map-get($colors, text-inverse)};
+  
+  --brand-green: #{map-get($colors, brand-green)};
+  --brand-primary: #{map-get($colors, brand-primary)};
+  
+  --status-active: #{map-get($colors, status-active)};
+  --status-active-text: #{map-get($colors, status-active-text)};
+  --status-inactive: #{map-get($colors, status-inactive)};
+  --status-inactive-text: #{map-get($colors, status-inactive-text)};
+  --status-draft: #{map-get($colors, status-draft)};
+  --status-archived: #{map-get($colors, status-archived)};
+  --status-archived-text: #{map-get($colors, status-archived-text)};
+  
+  --action-edit-bg: #{map-get($colors, action-edit-bg)};
+  --action-edit-text: #{map-get($colors, action-edit-text)};
+  --action-edit-hover: #{map-get($colors, action-edit-hover)};
+  --action-delete-bg: #{map-get($colors, action-delete-bg)};
+  --action-delete-text: #{map-get($colors, action-delete-text)};
+  --action-delete-hover: #{map-get($colors, action-delete-hover)};
+  
+  --stock-low: #{map-get($colors, stock-low)};
+  --stock-medium: #{map-get($colors, stock-medium)};
+  --stock-high: #{map-get($colors, stock-high)};
+  
+  --border-light: #{map-get($colors, border-light)};
+  --border-medium: #{map-get($colors, border-medium)};
+  --border-dark: #{map-get($colors, border-dark)};
+  
+  --interactive-default: #{map-get($colors, interactive-default)};
+  --interactive-hover: #{map-get($colors, interactive-hover)};
+  --interactive-pressed: #{map-get($colors, interactive-pressed)};
+  
+  --primary: #{map-get($colors, primary)};
+  --primary-hover: #{map-get($colors, primary-hover)};
+  --primary-pressed: #{map-get($colors, primary-pressed)};
+  
+  --form-bg: #{map-get($colors, form-bg)};
+  --form-border: #{map-get($colors, form-border)};
+  --form-border-hover: #{map-get($colors, form-border-hover)};
+  --form-text: #{map-get($colors, form-text)};
+  --form-text-secondary: #{map-get($colors, form-text-secondary)};
+  --form-text-muted: #{map-get($colors, form-text-muted)};
+  --form-placeholder: #{map-get($colors, form-placeholder)};
+  --form-disabled-bg: #{map-get($colors, form-disabled-bg)};
+  --form-hover-bg: #{map-get($colors, form-hover-bg)};
+  
+  --error: #{map-get($colors, error)};
+  --error-bg: #{map-get($colors, error-bg)};
+  --error-border: #{map-get($colors, error-border)};
+}
 
 * {
   box-sizing: border-box;
@@ -231,6 +330,10 @@ html {
   .mat-mdc-select-value {
     line-height: 24px !important; /* Adjust line height for text alignment */
   }
+  
+  .mat-mdc-select-arrow-wrapper {
+    display: none !important; /* Hide the chevron icon */
+  }
 }
 
 /* Reduce input field heights */
@@ -307,13 +410,13 @@ html {
   }
   
   &--primary {
-    background-color: #008060;
+    background-color: map-get($colors, primary);
     color: white;
-    border-color: #008060;
+    border-color: map-get($colors, primary);
     
     &:hover {
-      background-color: #006b52;
-      border-color: #006b52;
+      background-color: map-get($colors, primary-hover);
+      border-color: map-get($colors, primary-hover);
     }
   }
   
@@ -340,11 +443,11 @@ html {
   &--danger {
     background-color: map-get($colors, bg-secondary);
     border-color: map-get($colors, border-medium);
-    color: #dc2626;
+    color: map-get($colors, error);
     
     &:hover {
-      background-color: #fef2f2;
-      border-color: #fecaca;
+      background-color: map-get($colors, error-bg);
+      border-color: map-get($colors, error-border);
     }
   }
   
@@ -379,7 +482,7 @@ html {
   &:focus {
     outline: none;
     border-color: map-get($colors, interactive-default);
-    box-shadow: 0 0 0 3px rgba(0, 91, 211, 0.1);
+    box-shadow: 0 0 0 3px rgba(0, 128, 96, 0.1);
   }
   
   &--full-width {
@@ -508,7 +611,7 @@ html {
   
   &--archived {
     background-color: map-get($colors, status-archived);
-    color: #8a4a00;
+    color: map-get($colors, status-archived-text);
   }
   
   &--high {
@@ -518,7 +621,7 @@ html {
   
   &--medium {
     background-color: map-get($colors, status-archived);
-    color: #8a4a00;
+    color: map-get($colors, status-archived-text);
   }
   
   &--low {
