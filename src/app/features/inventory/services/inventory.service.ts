@@ -180,6 +180,18 @@ export class InventoryService {
     setTimeout(() => window.URL.revokeObjectURL(downloadUrl), 1000);
   }
 
+  downloadTemplate(): Observable<Blob> {
+    return this.http.get(`${environment.apiUrl}/api/Products/template`, { 
+      responseType: 'blob',
+      headers: new HttpHeaders({
+        'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+      }),
+      withCredentials: true 
+    }).pipe(
+      catchError(this.handleError)
+    );
+  }
+
   uploadPurchaseOrders(file: File): Observable<{ success: boolean; message: string; data: any }> {
     const formData = new FormData();
     formData.append('file', file);

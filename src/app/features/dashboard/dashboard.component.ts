@@ -9,6 +9,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { RouterModule } from '@angular/router';
 import { Router } from '@angular/router';
 import { DashboardService, DashboardResponse } from '../../core/services/dashboard.service';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -32,7 +33,8 @@ export class DashboardComponent implements OnInit {
   
   constructor(
     private router: Router,
-    private dashboardService: DashboardService
+    private dashboardService: DashboardService,
+    private authService: AuthService
   ) {}
 
   ngOnInit() {
@@ -49,7 +51,16 @@ export class DashboardComponent implements OnInit {
       },
       error: (error) => {
         console.error('Failed to load dashboard:', error);
-        this.isLoading = false;
+        
+        // Check if error is related to authentication/refresh token
+        if (error?.message?.includes('Missing Refresh Token') || 
+            error?.message?.includes('login_required') ||
+            error?.status === 401) {
+          console.warn('Authentication error detected, redirecting to login');
+          this.authService.logout();
+        } else {
+          this.isLoading = false;
+        }
       }
     });
   }

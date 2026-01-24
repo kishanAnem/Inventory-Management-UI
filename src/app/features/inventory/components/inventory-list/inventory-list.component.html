@@ -1,4 +1,12 @@
 <div class="retail-pro-container">
+  <!-- Download Loading Overlay -->
+  <div *ngIf="downloadLoading()" class="download-loading-overlay">
+    <div class="loading-content">
+      <mat-spinner diameter="50"></mat-spinner>
+      <p>Downloading template...</p>
+    </div>
+  </div>
+
   <!-- Header Section with Search -->
   <div class="retail-pro-page-header">
     <div class="retail-pro-header-top">

@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { AuthService as Auth0Service } from '@auth0/auth0-angular';
-import { Observable, map, switchMap, of } from 'rxjs';
+import { Observable, map, switchMap, of, catchError, throwError } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
+import { Router } from '@angular/router';
 
 export interface UserProfile {
   id: string;
@@ -23,7 +24,8 @@ export class AuthService {
   
   constructor(
     private auth0: Auth0Service,
-    private http: HttpClient
+    private http: HttpClient,
+    private router: Router
   ) {}
 
   // Check if user is authenticated
@@ -65,9 +67,33 @@ export class AuthService {
     });
   }
 
-  // Get access token
+  // Get access token with error handling
   getAccessToken(): Observable<string> {
-    return this.auth0.getAccessTokenSilently();
+    return this.auth0.getAccessTokenSilently().pipe(
+      catchError(error => {
+        // Handle missing refresh token or other auth errors
+        if (this.isAuthError(error)) {
+          console.warn('Authentication error detected:', error.message);
+          this.handleAuthError();
+        }
+        return throwError(() => error);
+      })
+    );
+  }
+
+  // Check if error is authentication-related
+  private isAuthError(error: any): boolean {
+    return error?.message?.includes('Missing Refresh Token') ||
+           error?.message?.includes('login_required') ||
+           error?.message?.includes('consent_required') ||
+           error?.error === 'login_required' ||
+           error?.error === 'consent_required';
+  }
+
+  // Handle authentication errors by redirecting to login
+  handleAuthError(): void {
+    console.warn('Handling auth error: redirecting to login');
+    this.logout();
   }
 
   // Check if user has specific role
