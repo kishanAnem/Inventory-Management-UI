@@ -5,7 +5,7 @@ import { Component, inject, signal, computed, effect, OnInit, OnDestroy } from '
 import { Store } from '@ngrx/store';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../../environments/environment';
-import { filter, Subscription } from 'rxjs';
+import { filter, Subscription, Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -15,6 +15,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { UploadProductsModalComponent } from '../upload-products-modal/upload-products-modal.component';
+import { PaginationComponent, PaginationConfig, PaginationChange } from '../../../../shared/components/pagination/pagination.component';
 import type { InventoryItem } from '../../services/inventory.service';
 import { InventoryService } from '../../services/inventory.service';
 import { InventoryActions } from '../../store/inventory.actions';
@@ -33,7 +34,8 @@ import { selectAllInventoryItems, selectInventoryLoading, selectInventoryError }
     MatIconModule,
     MatProgressSpinnerModule,
     MatTableModule,
-    MatTooltipModule
+    MatTooltipModule,
+    PaginationComponent
   ]
 })
 export class InventoryListComponent implements OnInit, OnDestroy {
@@ -50,29 +52,39 @@ export class InventoryListComponent implements OnInit, OnDestroy {
   searchTerm = '';
   displayedColumns: string[] = ['name', 'quantity', 'price', 'totalValue', 'actions'];
   private routerSubscription?: Subscription;
+  private searchSubject = new Subject<string>();
+  private searchSubscription?: Subscription;
+  
+  paginationConfig: PaginationConfig = {
+    currentPage: 1,
+    pageSize: 10,
+    totalItems: 0,
+    pageSizeOptions: [5, 10, 20, 50, 100]
+  };
 
   // Computed signal for filtered items
   filteredItems = computed(() => {
-    const term = this.searchTerm.toLowerCase().trim();
-    if (!term) {
-      return this.items();
-    }
-    return this.items().filter(item => 
-      item.name.toLowerCase().includes(term) ||
-      item.description?.toLowerCase().includes(term) ||
-      item.barcode.toLowerCase().includes(term)
-    );
+    return this.items();
   });
 
   constructor() {
     // Dispatch load action on init
-    this.store.dispatch(InventoryActions.loadInventory());
+    this.loadProducts();
 
     // Connect signals to store selectors
     effect(() => {
       this.store.select(selectAllInventoryItems).subscribe(items => this.items.set(items));
       this.store.select(selectInventoryLoading).subscribe(loading => this.loading.set(loading));
       this.store.select(selectInventoryError).subscribe(error => this.error.set(error));
+    });
+
+    // Setup debounced search
+    this.searchSubscription = this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(searchQuery => {
+      this.paginationConfig.currentPage = 1; // Reset to first page on search
+      this.loadProducts(searchQuery);
     });
   }
 
@@ -82,17 +94,43 @@ export class InventoryListComponent implements OnInit, OnDestroy {
       filter(event => event instanceof NavigationEnd),
       filter((event: NavigationEnd) => event.url === '/inventory' || event.url === '/inventory/')
     ).subscribe(() => {
-      this.store.dispatch(InventoryActions.loadInventory());
+      this.loadProducts();
     });
   }
 
   ngOnDestroy() {
     this.routerSubscription?.unsubscribe();
+    this.searchSubscription?.unsubscribe();
+  }
+
+  loadProducts(searchQuery?: string) {
+    this.loading.set(true);
+    this.inventoryService.getAll({ 
+      pageNumber: this.paginationConfig.currentPage, 
+      pageSize: this.paginationConfig.pageSize,
+      searchQuery: searchQuery 
+    }).subscribe({
+      next: (response) => {
+        this.items.set(response.items);
+        this.paginationConfig.totalItems = response.totalCount;
+        this.loading.set(false);
+      },
+      error: (error) => {
+        this.error.set(error);
+        this.loading.set(false);
+      }
+    });
+  }
+
+  onPageChange(change: PaginationChange) {
+    this.paginationConfig.currentPage = change.pageNumber;
+    this.paginationConfig.pageSize = change.pageSize;
+    this.loadProducts(this.searchTerm.trim() || undefined);
   }
 
   onSearch() {
-    // Trigger change detection for computed signal
-    this.searchTerm = this.searchTerm;
+    // Emit search term to the subject, which will debounce and call API
+    this.searchSubject.next(this.searchTerm.trim());
   }
 
   editItem(product: InventoryItem) {
@@ -179,7 +217,7 @@ export class InventoryListComponent implements OnInit, OnDestroy {
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         // Products were uploaded, refresh the list
-        this.store.dispatch(InventoryActions.loadInventory());
+        this.loadProducts();
       }
     });
   }

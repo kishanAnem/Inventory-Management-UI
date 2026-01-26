@@ -62,6 +62,22 @@ export interface ApiResponse<T> {
   data: T;
 }
 
+export interface PaginationParams {
+  pageNumber?: number;
+  pageSize?: number;
+  searchQuery?: string;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+}
+
+export interface PaginatedResponse<T> {
+  items: T[];
+  totalCount: number;
+  pageNumber: number;
+  pageSize: number;
+  totalPages: number;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -82,8 +98,34 @@ export class InventoryService {
   // Signal for reactive state (Angular 17+)
   readonly items = signal<InventoryItem[]>([]);
 
-  getAll(): Observable<InventoryItem[]> {
-    return this.http.get<ApiResponse<InventoryItem[]>>(this.apiUrl, { 
+  getAll(params?: PaginationParams): Observable<PaginatedResponse<InventoryItem>> {
+    let queryParams = '';
+    
+    if (params) {
+      const queryParts: string[] = [];
+      
+      if (params.pageNumber !== undefined) {
+        queryParts.push(`pageNumber=${params.pageNumber}`);
+      }
+      if (params.pageSize !== undefined) {
+        queryParts.push(`pageSize=${params.pageSize}`);
+      }
+      if (params.searchQuery) {
+        queryParts.push(`searchQuery=${encodeURIComponent(params.searchQuery)}`);
+      }
+      if (params.sortBy) {
+        queryParts.push(`sortBy=${params.sortBy}`);
+      }
+      if (params.sortOrder) {
+        queryParts.push(`sortOrder=${params.sortOrder}`);
+      }
+      
+      if (queryParts.length > 0) {
+        queryParams = '?' + queryParts.join('&');
+      }
+    }
+
+    return this.http.get<ApiResponse<PaginatedResponse<InventoryItem>>>(`${this.apiUrl}${queryParams}`, { 
       headers: this.getHeaders(), 
       withCredentials: true 
     }).pipe(
@@ -188,6 +230,20 @@ export class InventoryService {
       }),
       withCredentials: true 
     }).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  uploadProducts(file: File): Observable<InventoryItem[]> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    return this.http.post<ApiResponse<InventoryItem[]>>(
+      `${this.apiUrl}/upload`,
+      formData,
+      { withCredentials: true }
+    ).pipe(
+      map(response => response.data),
       catchError(this.handleError)
     );
   }

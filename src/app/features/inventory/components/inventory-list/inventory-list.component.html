@@ -12,11 +12,13 @@
     <div class="retail-pro-header-top">
       <h1 class="retail-pro-page-title">Products</h1>
       <div class="header-actions">
-        <button class="retail-pro-btn retail-pro-btn--secondary" (click)="downloadTemplate()" title="Download Excel Template">
+        <button class="retail-pro-btn retail-pro-btn--secondary" (click)="downloadTemplate()"
+          title="Download Excel Template">
           <mat-icon>download</mat-icon>
           Template
         </button>
-        <button class="retail-pro-btn retail-pro-btn--secondary" (click)="openUploadModal()" title="Upload Products from Excel">
+        <button class="retail-pro-btn retail-pro-btn--secondary" (click)="openUploadModal()"
+          title="Upload Products from Excel">
           <mat-icon>upload</mat-icon>
           Import Products
         </button>
@@ -31,12 +33,8 @@
       </div>
     </div>
     <div class="retail-pro-search-bar">
-      <input 
-        type="text" 
-        placeholder="Search products..." 
-        class="retail-pro-input retail-pro-input--full-width"
-        [(ngModel)]="searchTerm"
-        (input)="onSearch()">
+      <input type="text" placeholder="Search products..." class="retail-pro-input retail-pro-input--full-width"
+        [(ngModel)]="searchTerm" (input)="onSearch()">
       <button class="retail-pro-btn retail-pro-btn--secondary" (click)="onSearch()">Search</button>
     </div>
   </div>
@@ -55,52 +53,56 @@
 
   <!-- Products Table -->
   <div *ngIf="!loading() && filteredItems().length" class="table-container">
-    <table class="product-table">
-      <thead>
-        <tr>
-          <th>Product Name</th>
-          <th>Description</th>
-          <th>Barcode</th>
-          <th>Price</th>
-          <th>MRP</th>
-          <th>Quantity</th>
-          <th>Min Quantity</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let product of filteredItems()">
-          <td>{{ product.name }}</td>
-          <td>{{ product.description || '-' }}</td>
-          <td>{{ product.barcode }}</td>
-          <td>{{ product.price | currency }}</td>
-          <td>{{ product.mrp | currency }}</td>
-          <td>
-            <span [ngClass]="getQuantityClass(product.quantity, product.minimumQuantity)">
-              {{ product.quantity }}
-            </span>
-          </td>
-          <td>{{ product.minimumQuantity }}</td>
-          <td>
-            <span class="status-badge" [ngClass]="product.isActive ? 'active' : 'inactive'">
-              {{ product.isActive ? 'Active' : 'Inactive' }}
-            </span>
-          </td>
-          <td>
-            <div class="action-buttons">
-              <button class="btn-edit" (click)="editItem(product)" title="Edit">
-                <mat-icon>edit</mat-icon>
-              </button>
-              <button class="btn-delete" (click)="deleteItem(product.id)" title="Delete">
-                <mat-icon>delete</mat-icon>
-              </button>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="table-wrapper">
+      <table class="product-table">
+        <thead>
+          <tr>
+            <th>Product Name</th>
+            <th>Description</th>
+            <th>Barcode</th>
+            <th>Price</th>
+            <th>MRP</th>
+            <th>Quantity</th>
+            <th>Min Quantity</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let product of filteredItems()">
+            <td>{{ product.name }}</td>
+            <td>{{ product.description || '-' }}</td>
+            <td>{{ product.barcode }}</td>
+            <td>{{ product.price | currency }}</td>
+            <td>{{ product.mrp | currency }}</td>
+            <td>
+              <span [ngClass]="getQuantityClass(product.quantity, product.minimumQuantity)">
+                {{ product.quantity }}
+              </span>
+            </td>
+            <td>{{ product.minimumQuantity }}</td>
+            <td>
+              <span class="status-badge" [ngClass]="product.isActive ? 'active' : 'inactive'">
+                {{ product.isActive ? 'Active' : 'Inactive' }}
+              </span>
+            </td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn-edit" (click)="editItem(product)" title="Edit">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button class="btn-delete" (click)="deleteItem(product.id)" title="Delete">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!-- Pagination Component -->
   </div>
+  <app-pagination [config]="paginationConfig" (pageChange)="onPageChange($event)"></app-pagination>
 
   <!-- Empty State -->
   <div *ngIf="!loading() && !filteredItems().length && !error()" class="retail-pro-empty">

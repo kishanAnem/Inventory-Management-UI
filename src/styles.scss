@@ -330,7 +330,10 @@ html {
   .mat-mdc-select-value {
     line-height: 24px !important; /* Adjust line height for text alignment */
   }
-  
+}
+
+/* Hide select arrow only on add-product page */
+.add-product-page .mat-mdc-select {
   .mat-mdc-select-arrow-wrapper {
     display: none !important; /* Hide the chevron icon */
   }
