@@ -13,8 +13,8 @@ export class InventoryEffects {
     return this.actions$.pipe(
       ofType(InventoryActions.loadInventory),
       mergeMap(() =>
-        this.inventoryService.getAll().pipe(
-          map(items => InventoryActions.loadInventorySuccess({ items })),
+        this.inventoryService.getAll({ pageNumber: 1, pageSize: 1000 }).pipe(
+          map(response => InventoryActions.loadInventorySuccess({ items: response.items })),
           catchError(error => of(InventoryActions.loadInventoryFailure({ error })))
         )
       )

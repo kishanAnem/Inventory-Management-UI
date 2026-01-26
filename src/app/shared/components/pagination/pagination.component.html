@@ -1,0 +1,65 @@
+<div class="pagination-container">
+  <div class="rows-per-page">
+    <span class="label">Page:</span>
+    <mat-select 
+      class="page-size-select"
+      [value]="config.pageSize"
+      (selectionChange)="onPageSizeChange($event.value)"
+      disableOptionCentering
+      panelClass="no-backdrop">
+      @for (size of config.pageSizeOptions; track size) {
+        <mat-option [value]="size">
+          {{ size }}
+        </mat-option>
+      }
+    </mat-select>
+  </div>
+
+  <div class="page-info">
+    <span class="info-text">
+      {{ startIndex }}-{{ endIndex }} of {{ config.totalItems }}
+    </span>
+  </div>
+
+  <div class="navigation-buttons">
+    <button 
+      mat-icon-button 
+      [disabled]="!hasPreviousPage"
+      (click)="firstPage()"
+      class="nav-button"
+      title="First page"
+      disableRipple>
+      <mat-icon>first_page</mat-icon>
+    </button>
+    
+    <button 
+      mat-icon-button 
+      [disabled]="!hasPreviousPage"
+      (click)="previousPage()"
+      class="nav-button"
+      title="Previous page"
+      disableRipple>
+      <mat-icon>keyboard_arrow_left</mat-icon>
+    </button>
+    
+    <button 
+      mat-icon-button 
+      [disabled]="!hasNextPage"
+      (click)="nextPage()"
+      class="nav-button"
+      title="Next page"
+      disableRipple>
+      <mat-icon>keyboard_arrow_right</mat-icon>
+    </button>
+    
+    <button 
+      mat-icon-button 
+      [disabled]="!hasNextPage"
+      (click)="lastPage()"
+      class="nav-button"
+      title="Last page"
+      disableRipple>
+      <mat-icon>last_page</mat-icon>
+    </button>
+  </div>
+</div>

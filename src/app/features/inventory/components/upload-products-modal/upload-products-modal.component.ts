@@ -32,10 +32,7 @@ export class UploadProductsModalComponent {
   };
 
   onFileUpload(file: File) {
-    const formData = new FormData();
-    formData.append('file', file);
-
-    this.inventoryService.bulkCreateProducts([]).subscribe({
+    this.inventoryService.uploadProducts(file).subscribe({
       next: (response: any) => {
         // Map the response to UploadResult format
         const result: UploadResult = {
