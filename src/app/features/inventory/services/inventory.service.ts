@@ -33,29 +33,6 @@ export interface CreateProductRequest {
   subCategoryId?: string;
 }
 
-export interface CreatePurchaseOrderRequest {
-  productId: string;
-  qtyOrdered: number;
-  unitCost: number;
-  purchaseDate: string;
-  poNumber: string;
-  supplierName: string;
-  expiryDate?: string;
-}
-
-export interface PurchaseOrder {
-  id: string;
-  tenantId: string;
-  productId: string;
-  qtyOrdered: number;
-  qtyRemaining: number;
-  unitCost: number;
-  purchaseDate: string;
-  poNumber: string;
-  supplierName: string;
-  expiryDate?: string;
-}
-
 export interface ApiResponse<T> {
   success: boolean;
   message: string | null;
@@ -84,7 +61,7 @@ export interface PaginatedResponse<T> {
 export class InventoryService {
   private readonly apiUrl = `${environment.apiUrl}/api/products`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   // Security: Always send credentials and use secure headers
   private getHeaders(): HttpHeaders {
@@ -100,10 +77,10 @@ export class InventoryService {
 
   getAll(params?: PaginationParams): Observable<PaginatedResponse<InventoryItem>> {
     let queryParams = '';
-    
+
     if (params) {
       const queryParts: string[] = [];
-      
+
       if (params.pageNumber !== undefined) {
         queryParts.push(`pageNumber=${params.pageNumber}`);
       }
@@ -119,15 +96,15 @@ export class InventoryService {
       if (params.sortOrder) {
         queryParts.push(`sortOrder=${params.sortOrder}`);
       }
-      
+
       if (queryParts.length > 0) {
         queryParams = '?' + queryParts.join('&');
       }
     }
 
-    return this.http.get<ApiResponse<PaginatedResponse<InventoryItem>>>(`${this.apiUrl}${queryParams}`, { 
-      headers: this.getHeaders(), 
-      withCredentials: true 
+    return this.http.get<ApiResponse<PaginatedResponse<InventoryItem>>>(`${this.apiUrl}${queryParams}`, {
+      headers: this.getHeaders(),
+      withCredentials: true
     }).pipe(
       map(response => response.data),
       catchError(this.handleError)
@@ -135,9 +112,9 @@ export class InventoryService {
   }
 
   getById(id: string): Observable<InventoryItem> {
-    return this.http.get<ApiResponse<InventoryItem>>(`${this.apiUrl}/${id}`, { 
-      headers: this.getHeaders(), 
-      withCredentials: true 
+    return this.http.get<ApiResponse<InventoryItem>>(`${this.apiUrl}/${id}`, {
+      headers: this.getHeaders(),
+      withCredentials: true
     }).pipe(
       map(response => response.data),
       catchError(this.handleError)
@@ -145,9 +122,9 @@ export class InventoryService {
   }
 
   create(item: InventoryItem): Observable<InventoryItem> {
-    return this.http.post<ApiResponse<InventoryItem>>(this.apiUrl, item, { 
-      headers: this.getHeaders(), 
-      withCredentials: true 
+    return this.http.post<ApiResponse<InventoryItem>>(this.apiUrl, item, {
+      headers: this.getHeaders(),
+      withCredentials: true
     }).pipe(
       map(response => response.data),
       catchError(this.handleError)
@@ -155,7 +132,7 @@ export class InventoryService {
   }
 
   createProduct(product: CreateProductRequest): Observable<InventoryItem> {
-    return this.http.post<ApiResponse<InventoryItem>>(this.apiUrl, product, { 
+    return this.http.post<ApiResponse<InventoryItem>>(this.apiUrl, product, {
       headers: this.getHeaders()
     }).pipe(
       map(response => response.data),
@@ -164,7 +141,7 @@ export class InventoryService {
   }
 
   bulkCreateProducts(products: CreateProductRequest[]): Observable<InventoryItem[]> {
-    return this.http.post<ApiResponse<InventoryItem[]>>(`${this.apiUrl}/addproducts`, products, { 
+    return this.http.post<ApiResponse<InventoryItem[]>>(`${this.apiUrl}/addproducts`, products, {
       headers: this.getHeaders(),
       withCredentials: true
     }).pipe(
@@ -174,9 +151,9 @@ export class InventoryService {
   }
 
   update(id: string, item: InventoryItem): Observable<InventoryItem> {
-    return this.http.put<ApiResponse<InventoryItem>>(`${this.apiUrl}/${id}`, item, { 
-      headers: this.getHeaders(), 
-      withCredentials: true 
+    return this.http.put<ApiResponse<InventoryItem>>(`${this.apiUrl}/${id}`, item, {
+      headers: this.getHeaders(),
+      withCredentials: true
     }).pipe(
       map(response => response.data),
       catchError(this.handleError)
@@ -184,24 +161,15 @@ export class InventoryService {
   }
 
   delete(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`, { 
-      headers: this.getHeaders(), 
-      withCredentials: true 
-    }).pipe(
-      catchError(this.handleError)
-    );
-  }
-
-  exportProducts(): Observable<Blob> {
-    return this.http.get(`${this.apiUrl}/export`, {
-      responseType: 'blob',
+    return this.http.delete<void>(`${this.apiUrl}/${id}`, {
+      headers: this.getHeaders(),
       withCredentials: true
     }).pipe(
       catchError(this.handleError)
     );
   }
 
-  downloadPurchaseOrderTemplate(): Observable<Blob> {
+  exportProducts(): Observable<Blob> {
     return this.http.get(`${this.apiUrl}/export`, {
       responseType: 'blob',
       withCredentials: true
@@ -223,12 +191,12 @@ export class InventoryService {
   }
 
   downloadTemplate(): Observable<Blob> {
-    return this.http.get(`${environment.apiUrl}/api/Products/template`, { 
+    return this.http.get(`${environment.apiUrl}/api/Products/template`, {
       responseType: 'blob',
       headers: new HttpHeaders({
         'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
       }),
-      withCredentials: true 
+      withCredentials: true
     }).pipe(
       catchError(this.handleError)
     );
@@ -242,33 +210,6 @@ export class InventoryService {
       `${this.apiUrl}/upload`,
       formData,
       { withCredentials: true }
-    ).pipe(
-      map(response => response.data),
-      catchError(this.handleError)
-    );
-  }
-
-  uploadPurchaseOrders(file: File): Observable<{ success: boolean; message: string; data: any }> {
-    const formData = new FormData();
-    formData.append('file', file);
-
-    return this.http.post<{ success: boolean; message: string; data: any }>(
-      `${this.apiUrl}/purchase-orders/upload`,
-      formData,
-      { withCredentials: true }
-    ).pipe(
-      catchError(this.handleError)
-    );
-  }
-
-  createPurchaseOrder(purchaseOrder: CreatePurchaseOrderRequest): Observable<PurchaseOrder> {
-    return this.http.post<ApiResponse<PurchaseOrder>>(
-      `${this.apiUrl}/purchase-order`, 
-      purchaseOrder, 
-      { 
-        headers: this.getHeaders(),
-        withCredentials: true 
-      }
     ).pipe(
       map(response => response.data),
       catchError(this.handleError)

@@ -4,11 +4,13 @@
     <div class="retail-pro-header-top">
       <h1 class="retail-pro-page-title">Purchase Orders</h1>
       <div class="header-actions">
-        <button class="retail-pro-btn retail-pro-btn--secondary" (click)="downloadTemplate()" title="Download Excel Template">
+        <button class="retail-pro-btn retail-pro-btn--secondary" (click)="downloadTemplate()"
+          title="Download Excel Template">
           <mat-icon>download</mat-icon>
           Template
         </button>
-        <button class="retail-pro-btn retail-pro-btn--secondary" (click)="openUploadModal()" title="Upload Purchase Orders from Excel">
+        <button class="retail-pro-btn retail-pro-btn--secondary" (click)="openUploadModal()"
+          title="Upload Purchase Orders from Excel">
           <mat-icon>upload</mat-icon>
           Import
         </button>
@@ -19,12 +21,8 @@
       </div>
     </div>
     <div class="retail-pro-search-bar">
-      <input 
-        type="text" 
-        placeholder="Search purchase orders..." 
-        class="retail-pro-input retail-pro-input--full-width"
-        [(ngModel)]="searchTerm"
-        (input)="onSearch()">
+      <input type="text" placeholder="Search purchase orders..." class="retail-pro-input retail-pro-input--full-width"
+        [(ngModel)]="searchTerm" (input)="onSearch()">
       <button class="retail-pro-btn retail-pro-btn--secondary" (click)="onSearch()">Search</button>
     </div>
   </div>
@@ -42,30 +40,28 @@
   </div>
 
   <!-- Purchase Orders Table -->
-  <div *ngIf="!loading() && purchaseOrders().length" class="table-container">
-    <table class="purchase-order-table">
+  <div *ngIf="!loading() && filteredOrders().length" class="table-container">
+    <table class="product-table">
       <thead>
         <tr>
-          <th>Tenant ID</th>
+          <th>PO Number</th>
+          <th>Supplier Name</th>
           <th>Product ID</th>
           <th>Qty Remaining</th>
           <th>Unit Cost</th>
           <th>Purchase Date</th>
-          <th>PO Number</th>
-          <th>Supplier Name</th>
           <th>Expiry Date</th>
           <th>Actions</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let order of purchaseOrders()">
-          <td>{{ order.tenantId }}</td>
+        <tr *ngFor="let order of paginatedOrders()">
+          <td class="font-weight-medium">{{ order.poNumber }}</td>
+          <td>{{ order.supplierName }}</td>
           <td>{{ order.productId }}</td>
           <td>{{ order.qtyRemaining }}</td>
           <td>{{ order.unitCost | currency }}</td>
           <td>{{ order.purchaseDate | date }}</td>
-          <td>{{ order.poNumber }}</td>
-          <td>{{ order.supplierName }}</td>
           <td>{{ order.expiryDate | date }}</td>
           <td>
             <div class="action-buttons">
@@ -83,16 +79,22 @@
         </tr>
       </tbody>
     </table>
+
+    <!-- Pagination -->
+    <app-pagination [config]="paginationConfig()" (pageChange)="onPageChange($event)">
+    </app-pagination>
   </div>
 
   <!-- Empty State -->
-  <div *ngIf="!loading() && !purchaseOrders().length && !error()" class="retail-pro-empty">
+  <div *ngIf="!loading() && !filteredOrders().length && !error()" class="retail-pro-empty">
     <div class="retail-pro-empty__icon">
       <mat-icon>shopping_bag</mat-icon>
     </div>
     <h2 class="retail-pro-empty__title">No purchase orders found</h2>
-    <p class="retail-pro-empty__description">Get started by creating your first purchase order</p>
-    <button class="retail-pro-btn retail-pro-btn--primary retail-pro-btn--large" (click)="createPurchaseOrder()">
+    <p class="retail-pro-empty__description">{{ searchTerm ? 'Try adjusting your search criteria' : 'Get started by
+      creating your first purchase order' }}</p>
+    <button *ngIf="!searchTerm" class="retail-pro-btn retail-pro-btn--primary retail-pro-btn--large"
+      (click)="createPurchaseOrder()">
       <span class="btn-icon">+</span>
       Create Your First Purchase Order
     </button>
