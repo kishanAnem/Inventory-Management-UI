@@ -1,0 +1,189 @@
+<div class="retail-pro-container">
+    <!-- Tabs Container -->
+    <mat-tab-group class="category-tabs">
+        <!-- Categories Tab -->
+        <mat-tab label="Categories">
+            <div class="tab-content">
+                <!-- Header Section with Search -->
+                <div class="retail-pro-page-header">
+                    <div class="retail-pro-header-top">
+                        <h1 class="retail-pro-page-title">Categories</h1>
+                        <div class="header-actions">
+                            <button class="retail-pro-btn retail-pro-btn--primary" (click)="addCategory()">
+                                <span class="btn-icon">+</span>
+                                Add Category
+                            </button>
+                        </div>
+                    </div>
+                    <div class="retail-pro-search-bar">
+                        <input type="text" placeholder="Search categories..."
+                            class="retail-pro-input retail-pro-input--full-width" [(ngModel)]="categorySearchTerm"
+                            (input)="onCategorySearch()">
+                        <button class="retail-pro-btn retail-pro-btn--secondary"
+                            (click)="onCategorySearch()">Search</button>
+                    </div>
+                </div>
+
+                <!-- Error State -->
+                <div *ngIf="error()" class="retail-pro-error">
+                    <mat-icon>warning</mat-icon>
+                    <p>{{ getErrorMessage() }}</p>
+                </div>
+
+                <!-- Loading State -->
+                @if (categoryLoading()) {
+                <div class="grid-loading-container">
+                    <mat-spinner diameter="40"></mat-spinner>
+                    <p>Loading categories...</p>
+                </div>
+                }
+
+                <!-- Categories Table -->
+                @if (!categoryLoading()) {
+                <div *ngIf="filteredCategories.length" class="table-container">
+                    <div class="table-wrapper">
+                        <table class="product-table">
+                            <thead>
+                                <tr>
+                                    <th>Category Name</th>
+                                    <th>Description</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let category of filteredCategories">
+                                    <td>{{ category.name }}</td>
+                                    <td>{{ category.description || '-' }}</td>
+                                    <td>
+                                        <span class="status-badge"
+                                            [ngClass]="category.isActive ? 'active' : 'inactive'">
+                                            {{ category.isActive ? 'Active' : 'Inactive' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <button class="btn-edit" (click)="editCategory(category)" title="Edit">
+                                                <mat-icon>edit</mat-icon>
+                                            </button>
+                                            <button class="btn-delete" (click)="deleteCategory(category.id)"
+                                                title="Delete">
+                                                <mat-icon>delete</mat-icon>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Empty State for Categories -->
+                <div *ngIf="!filteredCategories.length && !error()" class="retail-pro-empty">
+                    <div class="retail-pro-empty__icon">
+                        <mat-icon>category</mat-icon>
+                    </div>
+                    <h2 class="retail-pro-empty__title">No categories found</h2>
+                    <p class="retail-pro-empty__description">Get started by adding your first category</p>
+                    <button class="retail-pro-btn retail-pro-btn--primary retail-pro-btn--large"
+                        (click)="addCategory()">
+                        <span class="btn-icon">+</span>
+                        Add Your First Category
+                    </button>
+                </div>
+                }
+            </div>
+        </mat-tab>
+
+        <!-- Sub-Categories Tab -->
+        <mat-tab label="Sub-Categories">
+            <div class="tab-content">
+                <!-- Header Section with Search -->
+                <div class="retail-pro-page-header">
+                    <div class="retail-pro-header-top">
+                        <h1 class="retail-pro-page-title">Sub-Categories</h1>
+                        <div class="header-actions">
+                            <button class="retail-pro-btn retail-pro-btn--primary" (click)="addSubCategory()">
+                                <span class="btn-icon">+</span>
+                                Add Sub-Category
+                            </button>
+                        </div>
+                    </div>
+                    <div class="retail-pro-search-bar">
+                        <input type="text" placeholder="Search sub-categories..."
+                            class="retail-pro-input retail-pro-input--full-width" [(ngModel)]="subCategorySearchTerm"
+                            (input)="onSubCategorySearch()">
+                        <button class="retail-pro-btn retail-pro-btn--secondary"
+                            (click)="onSubCategorySearch()">Search</button>
+                    </div>
+                </div>
+
+                <!-- Loading State -->
+                @if (subCategoryLoading()) {
+                <div class="grid-loading-container">
+                    <mat-spinner diameter="40"></mat-spinner>
+                    <p>Loading sub-categories...</p>
+                </div>
+                }
+
+                <!-- Sub-Categories Table -->
+                @if (!subCategoryLoading()) {
+                <div *ngIf="filteredSubCategories.length" class="table-container">
+                    <div class="table-wrapper">
+                        <table class="product-table">
+                            <thead>
+                                <tr>
+                                    <th>Sub-Category Name</th>
+                                    <th>Category</th>
+                                    <th>Description</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let subCategory of filteredSubCategories">
+                                    <td>{{ subCategory.name }}</td>
+                                    <td>{{ subCategory.categoryName || '-' }}</td>
+                                    <td>{{ subCategory.description || '-' }}</td>
+                                    <td>
+                                        <span class="status-badge"
+                                            [ngClass]="subCategory.isActive ? 'active' : 'inactive'">
+                                            {{ subCategory.isActive ? 'Active' : 'Inactive' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <button class="btn-edit" (click)="editSubCategory(subCategory)"
+                                                title="Edit">
+                                                <mat-icon>edit</mat-icon>
+                                            </button>
+                                            <button class="btn-delete" (click)="deleteSubCategory(subCategory.id)"
+                                                title="Delete">
+                                                <mat-icon>delete</mat-icon>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Empty State for Sub-Categories -->
+                <div *ngIf="!filteredSubCategories.length && !error()" class="retail-pro-empty">
+                    <div class="retail-pro-empty__icon">
+                        <mat-icon>label</mat-icon>
+                    </div>
+                    <h2 class="retail-pro-empty__title">No sub-categories found</h2>
+                    <p class="retail-pro-empty__description">Get started by adding your first sub-category</p>
+                    <button class="retail-pro-btn retail-pro-btn--primary retail-pro-btn--large"
+                        (click)="addSubCategory()">
+                        <span class="btn-icon">+</span>
+                        Add Your First Sub-Category
+                    </button>
+                </div>
+                }
+            </div>
+        </mat-tab>
+    </mat-tab-group>
+</div>

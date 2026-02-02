@@ -1,0 +1,35 @@
+/**
+ * Category Management Component Styles
+ * Uses global table, tab, button, and loading styles from styles.scss
+ * Component-specific tab styling below
+ */
+
+.category-tabs {
+    ::ng-deep {
+        .mat-mdc-tab-labels {
+            background-color: white;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .mat-mdc-tab-label {
+            color: var(--form-text-muted);
+            font-weight: 500;
+            font-size: 14px;
+            min-width: 160px;
+
+            &.mat-mdc-tab-label-active {
+                color: var(--primary);
+            }
+        }
+
+        .mat-mdc-tab-body-wrapper {
+            padding-top: 0;
+        }
+    }
+}
+
+.tab-content {
+    padding-top: 24px;
+}
+
+// All table, button, and status styles use global definitions
