@@ -7,6 +7,15 @@
     </div>
   </div>
 
+  <!-- Page Loading State -->
+  @if (loading()) {
+  <div class="page-loading-container">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>Loading products...</p>
+  </div>
+  }
+
+  @if (!loading()) {
   <!-- Header Section with Search -->
   <div class="retail-pro-page-header">
     <div class="retail-pro-header-top">
@@ -39,12 +48,6 @@
     </div>
   </div>
 
-  <!-- Loading State -->
-  <div *ngIf="loading()" class="retail-pro-loading">
-    <mat-spinner diameter="40"></mat-spinner>
-    <p>Loading products...</p>
-  </div>
-
   <!-- Error State -->
   <div *ngIf="error()" class="retail-pro-error">
     <mat-icon>warning</mat-icon>
@@ -52,7 +55,7 @@
   </div>
 
   <!-- Products Table -->
-  <div *ngIf="!loading() && filteredItems().length" class="table-container">
+  <div *ngIf="filteredItems().length" class="table-container">
     <div class="table-wrapper">
       <table class="product-table">
         <thead>
@@ -116,4 +119,5 @@
       Add Your First Product
     </button>
   </div>
+  }
 </div>

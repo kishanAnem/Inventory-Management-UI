@@ -1,290 +1,241 @@
 <div class="add-product-page">
-  <!-- Header -->
-  <div class="page-header">
-    <div class="header-content">
-      <button mat-icon-button class="back-button" (click)="onCancel()">
-        <mat-icon>arrow_back</mat-icon>
-      </button>
-      <h1>{{ isEditMode ? 'Edit Product' : 'Add New Product' }}</h1>
-    </div>
-  </div>
-
   <!-- Loading Spinner -->
   @if (isLoading) {
-    <div class="loading-container">
-      <mat-spinner diameter="40"></mat-spinner>
-      <p>Loading product...</p>
-    </div>
+  <div class="loading-container">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>Loading product...</p>
+  </div>
   }
 
-  <!-- Main Content -->
   @if (!isLoading) {
-    <div class="page-content">
-      <mat-card class="form-card">
-        <!-- Error Message -->
-        @if (errorMessage()) {
-          <div class="error-message">
-            <mat-icon>error</mat-icon>
-            <span>{{ errorMessage() }}</span>
-          </div>
-        }
+  <!-- Header -->
+  <div class="page-header">
+    <button mat-icon-button class="back-button" (click)="onCancel()">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <h1>{{ isEditMode ? 'Edit Product' : 'Add New Product' }}</h1>
+  </div>
 
-        <form [formGroup]="productForm" class="product-form">
-          
-          <!-- Product Name and Barcode Row -->
-          <div class="form-row">
-            <div class="form-field">
-              <label class="field-label">
-                Product name <span class="required">*</span>
-              </label>
-              <input type="text" 
-                     class="field-input" 
-                     formControlName="name" 
-                     placeholder="Product name" />
-              <div class="field-error" *ngIf="productForm.get('name')?.invalid && productForm.get('name')?.touched">
-                {{ getErrorMessage('name') }}
-              </div>
-            </div>
+  <!-- Main Content -->
+  <div class="page-content">
+    <mat-card class="form-card">
+      <!-- Error Message -->
+      @if (errorMessage()) {
+      <div class="error-message">
+        <mat-icon>error</mat-icon>
+        <span>{{ errorMessage() }}</span>
+      </div>
+      }
 
-            <div class="form-field">
-              <label class="field-label">
-                Barcode <span class="required">*</span>
-              </label>
-              <div class="input-with-button">
-                <input type="text" 
-                       class="field-input" 
-                       formControlName="barcode" 
-                       placeholder="Barcode" />
-                <button type="button" class="inline-btn" (click)="generateBarcode()">
-                  <mat-icon>qr_code</mat-icon>
-                </button>
-              </div>
-              <div class="field-error" *ngIf="productForm.get('barcode')?.invalid && productForm.get('barcode')?.touched">
-                {{ getErrorMessage('barcode') }}
-              </div>
-            </div>
-          </div>
+      <form [formGroup]="productForm" class="product-form">
 
-          <!-- Description (Full Width) -->
-          <div class="form-field full-width">
-            <label class="field-label">Description</label>
-            <textarea class="field-input field-textarea" 
-                      formControlName="description" 
-                      placeholder="Product description (optional)"
-                      rows="3"></textarea>
-          </div>
-
-          <!-- Category and Sub-Category Row -->
-          <div class="form-row">
-            <div class="form-field">
-              <label class="field-label">Category</label>
-              <div class="input-with-button">
-                <select class="field-input field-select" formControlName="categoryId">
-                  <option value="">Select category</option>
-                  <option *ngFor="let category of categories" [value]="category.id">
-                    {{ category.name }}
-                  </option>
-                </select>
-                <button type="button" class="inline-btn" (click)="openAddCategoryDialog()">
-                  <mat-icon>add</mat-icon>
-                </button>
-              </div>
-            </div>
-
-            <div class="form-field">
-              <label class="field-label">Sub-Category</label>
-              <div class="input-with-button">
-                <select class="field-input field-select" 
-                        formControlName="subCategoryId"
-                        [disabled]="!productForm.get('categoryId')?.value">
-                  <option value="">Select sub-category</option>
-                  <option *ngFor="let subCategory of filteredSubCategories" [value]="subCategory.id">
-                    {{ subCategory.name }}
-                  </option>
-                </select>
-                <button type="button" 
-                        class="inline-btn" 
-                        (click)="openAddSubCategoryDialog()"
-                        [disabled]="!productForm.get('categoryId')?.value">
-                  <mat-icon>add</mat-icon>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Price and MRP Row -->
-          <div class="form-row">
-            <div class="form-field">
-              <label class="field-label">
-                Selling Price <span class="required">*</span>
-              </label>
-              <input type="number" 
-                     class="field-input" 
-                     formControlName="price" 
-                     placeholder="0.00"
-                     min="0"
-                     step="0.01" />
-              <div class="field-error" *ngIf="productForm.get('price')?.invalid && productForm.get('price')?.touched">
-                {{ getErrorMessage('price') }}
-              </div>
-            </div>
-
-            <div class="form-field">
-              <label class="field-label">
-                MRP <span class="required">*</span>
-              </label>
-              <input type="number" 
-                     class="field-input" 
-                     formControlName="mrp" 
-                     placeholder="0.00"
-                     min="0"
-                     step="0.01" />
-              <div class="field-error" *ngIf="productForm.get('mrp')?.invalid && productForm.get('mrp')?.touched">
-                {{ getErrorMessage('mrp') }}
-              </div>
-            </div>
-          </div>
-
-          <!-- Quantity and Minimum Quantity Row -->
-          <div class="form-row">
-            <div class="form-field">
-              <label class="field-label">
-                Quantity <span class="required">*</span>
-              </label>
-              <input type="number" 
-                     class="field-input" 
-                     formControlName="quantity" 
-                     placeholder="0"
-                     min="0"
-                     step="1" />
-              <div class="field-error" *ngIf="productForm.get('quantity')?.invalid && productForm.get('quantity')?.touched">
-                {{ getErrorMessage('quantity') }}
-              </div>
-            </div>
-
-            <div class="form-field">
-              <label class="field-label">
-                Minimum Quantity <span class="required">*</span>
-              </label>
-              <input type="number" 
-                     class="field-input" 
-                     formControlName="minimumQuantity" 
-                     placeholder="0"
-                     min="0"
-                     step="1" />
-              <div class="field-error" *ngIf="productForm.get('minimumQuantity')?.invalid && productForm.get('minimumQuantity')?.touched">
-                {{ getErrorMessage('minimumQuantity') }}
-              </div>
-            </div>
-          </div>
-
-          <!-- Active Status -->
-          <div class="checkbox-field">
-            <label class="checkbox-container">
-              <input type="checkbox" formControlName="isActive" />
-              <span class="checkbox-label">Active Product</span>
+        <!-- Product Name and Barcode Row -->
+        <div class="form-row">
+          <div class="form-field">
+            <label class="field-label">
+              Product name <span class="required">*</span>
             </label>
-            <small class="checkbox-hint">Inactive products won't appear in sales</small>
+            <input type="text" class="field-input" formControlName="name" placeholder="Product name" />
+            <div class="field-error" *ngIf="productForm.get('name')?.invalid && productForm.get('name')?.touched">
+              {{ getErrorMessage('name') }}
+            </div>
           </div>
 
-        </form>
-
-        <!-- Form Actions -->
-        <div class="form-actions">
-          <button type="button" 
-                  class="btn btn-secondary" 
-                  (click)="onCancel()">
-            Cancel
-          </button>
-          <button type="button" 
-                  class="btn btn-primary" 
-                  (click)="onSubmit()"
-                  [disabled]="!productForm.valid || isSubmitting">
-            <mat-icon *ngIf="isSubmitting" class="spinning">sync</mat-icon>
-            {{ isSubmitting ? (isEditMode ? 'Updating...' : 'Adding...') : (isEditMode ? 'Update Product' : 'Add Product') }}
-          </button>
+          <div class="form-field">
+            <label class="field-label">
+              Barcode <span class="required">*</span>
+            </label>
+            <div class="input-with-button">
+              <input type="text" class="field-input" formControlName="barcode" placeholder="Barcode" />
+              <button type="button" class="inline-btn" (click)="generateBarcode()">
+                <mat-icon>qr_code</mat-icon>
+              </button>
+            </div>
+            <div class="field-error" *ngIf="productForm.get('barcode')?.invalid && productForm.get('barcode')?.touched">
+              {{ getErrorMessage('barcode') }}
+            </div>
+          </div>
         </div>
-      </mat-card>
-    </div>
+
+        <!-- Description (Full Width) -->
+        <div class="form-field full-width">
+          <label class="field-label">Description</label>
+          <textarea class="field-input field-textarea" formControlName="description"
+            placeholder="Product description (optional)" rows="3"></textarea>
+        </div>
+
+        <!-- Category and Sub-Category Row -->
+        <div class="form-row">
+          <div class="form-field">
+            <label class="field-label">Category</label>
+            <div class="input-with-button">
+              <select class="field-input field-select" formControlName="categoryId">
+                <option value="">Select category</option>
+                <option *ngFor="let category of categories" [value]="category.id">
+                  {{ category.name }}
+                </option>
+              </select>
+              <button type="button" class="inline-btn" (click)="openAddCategoryDialog()">
+                <mat-icon>add</mat-icon>
+              </button>
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label class="field-label">Sub-Category</label>
+            <div class="input-with-button">
+              <select class="field-input field-select" formControlName="subCategoryId"
+                [disabled]="!productForm.get('categoryId')?.value">
+                <option value="">Select sub-category</option>
+                <option *ngFor="let subCategory of filteredSubCategories" [value]="subCategory.id">
+                  {{ subCategory.name }}
+                </option>
+              </select>
+              <button type="button" class="inline-btn" (click)="openAddSubCategoryDialog()"
+                [disabled]="!productForm.get('categoryId')?.value">
+                <mat-icon>add</mat-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Price and MRP Row -->
+        <div class="form-row">
+          <div class="form-field">
+            <label class="field-label">
+              Selling Price <span class="required">*</span>
+            </label>
+            <input type="number" class="field-input" formControlName="price" placeholder="0.00" min="0" step="0.01" />
+            <div class="field-error" *ngIf="productForm.get('price')?.invalid && productForm.get('price')?.touched">
+              {{ getErrorMessage('price') }}
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label class="field-label">
+              MRP <span class="required">*</span>
+            </label>
+            <input type="number" class="field-input" formControlName="mrp" placeholder="0.00" min="0" step="0.01" />
+            <div class="field-error" *ngIf="productForm.get('mrp')?.invalid && productForm.get('mrp')?.touched">
+              {{ getErrorMessage('mrp') }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Quantity and Minimum Quantity Row -->
+        <div class="form-row">
+          <div class="form-field">
+            <label class="field-label">
+              Quantity <span class="required">*</span>
+            </label>
+            <input type="number" class="field-input" formControlName="quantity" placeholder="0" min="0" step="1" />
+            <div class="field-error"
+              *ngIf="productForm.get('quantity')?.invalid && productForm.get('quantity')?.touched">
+              {{ getErrorMessage('quantity') }}
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label class="field-label">
+              Minimum Quantity <span class="required">*</span>
+            </label>
+            <input type="number" class="field-input" formControlName="minimumQuantity" placeholder="0" min="0"
+              step="1" />
+            <div class="field-error"
+              *ngIf="productForm.get('minimumQuantity')?.invalid && productForm.get('minimumQuantity')?.touched">
+              {{ getErrorMessage('minimumQuantity') }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Active Status -->
+        <div class="checkbox-field">
+          <label class="checkbox-container">
+            <input type="checkbox" formControlName="isActive" />
+            <span class="checkbox-label">Active Product</span>
+          </label>
+          <small class="checkbox-hint">Inactive products won't appear in sales</small>
+        </div>
+
+      </form>
+
+      <!-- Form Actions -->
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" (click)="onCancel()">
+          Cancel
+        </button>
+        <button type="button" class="btn btn-primary" (click)="onSubmit()"
+          [disabled]="!productForm.valid || isSubmitting">
+          <mat-icon *ngIf="isSubmitting" class="spinning">sync</mat-icon>
+          {{ isSubmitting ? (isEditMode ? 'Updating...' : 'Adding...') : (isEditMode ? 'Update Product' : 'Add Product')
+          }}
+        </button>
+      </div>
+    </mat-card>
+  </div>
   }
 </div>
 
 <!-- Add Category Dialog -->
 @if (showAddCategoryDialog) {
-  <div class="overlay" (click)="closeAddCategoryDialog()">
-    <div class="quick-add-dialog" (click)="$event.stopPropagation()">
-      <div class="quick-add-header">
-        <h3>Add New Category</h3>
-        <button mat-icon-button (click)="closeAddCategoryDialog()">
-          <mat-icon>close</mat-icon>
-        </button>
-      </div>
-      <div class="quick-add-content">
-        <div class="form-field">
-          <label class="field-label">Category Name <span class="required">*</span></label>
-          <input type="text"
-                 class="field-input"
-                 [(ngModel)]="newCategoryName" 
-                 (keydown.enter)="addNewCategory()"
-                 placeholder="Enter category name" 
-                 autofocus />
-        </div>
-      </div>
-      <div class="quick-add-actions">
-        <button type="button" 
-                class="btn btn-secondary" 
-                (click)="closeAddCategoryDialog()">
-          Cancel
-        </button>
-        <button type="button" 
-                class="btn btn-primary" 
-                (click)="addNewCategory()"
-                [disabled]="!newCategoryName.trim() || isAddingCategory">
-          <mat-icon *ngIf="!isAddingCategory">add</mat-icon>
-          <mat-icon *ngIf="isAddingCategory" class="spinning">sync</mat-icon>
-          {{ isAddingCategory ? 'Adding...' : 'Add Category' }}
-        </button>
+<div class="overlay" (click)="closeAddCategoryDialog()">
+  <div class="quick-add-dialog" (click)="$event.stopPropagation()">
+    <div class="quick-add-header">
+      <h3>Add New Category</h3>
+      <button mat-icon-button (click)="closeAddCategoryDialog()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+    <div class="quick-add-content">
+      <div class="form-field">
+        <label class="field-label">Category Name <span class="required">*</span></label>
+        <input type="text" class="field-input" [(ngModel)]="newCategoryName" (keydown.enter)="addNewCategory()"
+          placeholder="Enter category name" autofocus />
       </div>
     </div>
+    <div class="quick-add-actions">
+      <button type="button" class="btn btn-secondary" (click)="closeAddCategoryDialog()">
+        Cancel
+      </button>
+      <button type="button" class="btn btn-primary" (click)="addNewCategory()"
+        [disabled]="!newCategoryName.trim() || isAddingCategory">
+        <mat-icon *ngIf="!isAddingCategory">add</mat-icon>
+        <mat-icon *ngIf="isAddingCategory" class="spinning">sync</mat-icon>
+        {{ isAddingCategory ? 'Adding...' : 'Add Category' }}
+      </button>
+    </div>
   </div>
+</div>
 }
 
 <!-- Add Sub-Category Dialog -->
 @if (showAddSubCategoryDialog) {
-  <div class="overlay" (click)="closeAddSubCategoryDialog()">
-    <div class="quick-add-dialog" (click)="$event.stopPropagation()">
-      <div class="quick-add-header">
-        <h3>Add New Sub-Category</h3>
-        <button mat-icon-button (click)="closeAddSubCategoryDialog()">
-          <mat-icon>close</mat-icon>
-        </button>
-      </div>
-      <div class="quick-add-content">
-        <div class="form-field">
-          <label class="field-label">Sub-Category Name <span class="required">*</span></label>
-          <input type="text"
-                 class="field-input"
-                 [(ngModel)]="newSubCategoryName" 
-                 (keydown.enter)="addNewSubCategory()"
-                 placeholder="Enter sub-category name" 
-                 autofocus />
-        </div>
-      </div>
-      <div class="quick-add-actions">
-        <button type="button" 
-                class="btn btn-secondary" 
-                (click)="closeAddSubCategoryDialog()">
-          Cancel
-        </button>
-        <button type="button" 
-                class="btn btn-primary" 
-                (click)="addNewSubCategory()"
-                [disabled]="!newSubCategoryName.trim() || isAddingSubCategory">
-          <mat-icon *ngIf="!isAddingSubCategory">add</mat-icon>
-          <mat-icon *ngIf="isAddingSubCategory" class="spinning">sync</mat-icon>
-          {{ isAddingSubCategory ? 'Adding...' : 'Add Sub-Category' }}
-        </button>
+<div class="overlay" (click)="closeAddSubCategoryDialog()">
+  <div class="quick-add-dialog" (click)="$event.stopPropagation()">
+    <div class="quick-add-header">
+      <h3>Add New Sub-Category</h3>
+      <button mat-icon-button (click)="closeAddSubCategoryDialog()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+    <div class="quick-add-content">
+      <div class="form-field">
+        <label class="field-label">Sub-Category Name <span class="required">*</span></label>
+        <input type="text" class="field-input" [(ngModel)]="newSubCategoryName" (keydown.enter)="addNewSubCategory()"
+          placeholder="Enter sub-category name" autofocus />
       </div>
     </div>
+    <div class="quick-add-actions">
+      <button type="button" class="btn btn-secondary" (click)="closeAddSubCategoryDialog()">
+        Cancel
+      </button>
+      <button type="button" class="btn btn-primary" (click)="addNewSubCategory()"
+        [disabled]="!newSubCategoryName.trim() || isAddingSubCategory">
+        <mat-icon *ngIf="!isAddingSubCategory">add</mat-icon>
+        <mat-icon *ngIf="isAddingSubCategory" class="spinning">sync</mat-icon>
+        {{ isAddingSubCategory ? 'Adding...' : 'Add Sub-Category' }}
+      </button>
+    </div>
   </div>
+</div>
 }
