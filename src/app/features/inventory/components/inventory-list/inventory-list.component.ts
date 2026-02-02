@@ -27,7 +27,7 @@ import { selectAllInventoryItems, selectInventoryLoading, selectInventoryError }
   templateUrl: './inventory-list.component.html',
   styleUrl: './inventory-list.component.scss',
   imports: [
-    RouterModule, 
+    RouterModule,
     CommonModule,
     FormsModule,
     MatButtonModule,
@@ -46,7 +46,7 @@ export class InventoryListComponent implements OnInit, OnDestroy {
   private inventoryService = inject(InventoryService);
 
   items = signal<InventoryItem[]>([]);
-  loading = signal(false);
+  loading = signal(true);
   downloadLoading = signal(false);
   error = signal<any>(null);
   searchTerm = '';
@@ -54,7 +54,7 @@ export class InventoryListComponent implements OnInit, OnDestroy {
   private routerSubscription?: Subscription;
   private searchSubject = new Subject<string>();
   private searchSubscription?: Subscription;
-  
+
   paginationConfig: PaginationConfig = {
     currentPage: 1,
     pageSize: 10,
@@ -68,15 +68,17 @@ export class InventoryListComponent implements OnInit, OnDestroy {
   });
 
   constructor() {
-    // Dispatch load action on init
+    // Dispatch load action first
     this.loadProducts();
 
-    // Connect signals to store selectors
-    effect(() => {
-      this.store.select(selectAllInventoryItems).subscribe(items => this.items.set(items));
-      this.store.select(selectInventoryLoading).subscribe(loading => this.loading.set(loading));
-      this.store.select(selectInventoryError).subscribe(error => this.error.set(error));
-    });
+    // Delay store subscription to ensure dispatch completes first
+    setTimeout(() => {
+      effect(() => {
+        this.store.select(selectAllInventoryItems).subscribe(items => this.items.set(items));
+        this.store.select(selectInventoryLoading).subscribe(loading => this.loading.set(loading));
+        this.store.select(selectInventoryError).subscribe(error => this.error.set(error));
+      });
+    }, 0);
 
     // Setup debounced search
     this.searchSubscription = this.searchSubject.pipe(
@@ -105,10 +107,10 @@ export class InventoryListComponent implements OnInit, OnDestroy {
 
   loadProducts(searchQuery?: string) {
     this.loading.set(true);
-    this.inventoryService.getAll({ 
-      pageNumber: this.paginationConfig.currentPage, 
+    this.inventoryService.getAll({
+      pageNumber: this.paginationConfig.currentPage,
       pageSize: this.paginationConfig.pageSize,
-      searchQuery: searchQuery 
+      searchQuery: searchQuery
     }).subscribe({
       next: (response) => {
         this.items.set(response.items);
@@ -163,9 +165,9 @@ export class InventoryListComponent implements OnInit, OnDestroy {
   getErrorMessage(): string {
     const error = this.error();
     if (!error) return '';
-    
+
     if (typeof error === 'string') return error;
-    
+
     // Handle error object safely
     try {
       if (error && typeof error === 'object') {
@@ -176,8 +178,8 @@ export class InventoryListComponent implements OnInit, OnDestroy {
           return error.error.message;
         }
         if ('status' in error && typeof error.status === 'number') {
-          const statusText = 'statusText' in error && typeof error.statusText === 'string' 
-            ? error.statusText 
+          const statusText = 'statusText' in error && typeof error.statusText === 'string'
+            ? error.statusText
             : 'Unknown error';
           return `HTTP Error ${error.status}: ${statusText}`;
         }
@@ -185,7 +187,7 @@ export class InventoryListComponent implements OnInit, OnDestroy {
     } catch (e) {
       console.error('Error parsing error object:', e);
     }
-    
+
     return 'An unknown error occurred';
   }
 
