@@ -23,9 +23,9 @@ export interface MenuItem {
 export class SidebarComponent {
   @Input() collapsed = false;
   @Output() toggleCollapsed = new EventEmitter<boolean>();
-  
+
   isCollapsed = signal(false);
-  
+
   menuItems: MenuItem[] = [
     {
       id: 'home',
@@ -47,6 +47,7 @@ export class SidebarComponent {
       isExpanded: false,
       children: [
         { id: 'all-products', label: 'All products', icon: '', route: '/inventory' },
+        { id: 'categories', label: 'Categories', icon: '', route: '/inventory/categories' },
         // { id: 'collections', label: 'Collections', icon: '', route: '/inventory/collections' },
         // { id: 'inventory', label: 'Inventory', icon: '', route: '/inventory/stock' },
         { id: 'purchase-orders', label: 'Purchase orders', icon: '', route: '/inventory/purchase-orders' },
@@ -91,7 +92,7 @@ export class SidebarComponent {
     { id: 'point-of-sale', label: 'Point of Sale', icon: 'point_of_sale' }
   ];
 
-  constructor(private router: Router) {}
+  constructor(private router: Router) { }
 
   toggleSidebar() {
     const newState = !this.isCollapsed();

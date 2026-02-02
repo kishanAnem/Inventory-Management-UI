@@ -1,0 +1,71 @@
+<div class="modal-container">
+    <div class="modal-header">
+        <h2>{{ isEditMode ? 'Edit Sub-Category' : 'Add Sub-Category' }}</h2>
+        <button class="close-btn" (click)="onCancel()" type="button">
+            <mat-icon>close</mat-icon>
+        </button>
+    </div>
+
+    <form [formGroup]="subCategoryForm" (ngSubmit)="onSubmit()">
+        <div class="modal-content">
+            <!-- Error Message -->
+            <div *ngIf="errorMessage" class="error-banner">
+                <mat-icon>error</mat-icon>
+                <span>{{ errorMessage }}</span>
+            </div>
+
+            <!-- Category Selection -->
+            <div class="form-group">
+                <label for="categoryId" class="form-label">
+                    Category <span class="required">*</span>
+                </label>
+                <mat-select id="categoryId" formControlName="categoryId" class="form-select"
+                    placeholder="Select a category" [class.error]="hasFieldError('categoryId')">
+                    <mat-option *ngFor="let category of categories" [value]="category.id">
+                        {{ category.name }}
+                    </mat-option>
+                </mat-select>
+                <span *ngIf="hasFieldError('categoryId')" class="error-message">
+                    {{ getFieldError('categoryId') }}
+                </span>
+            </div>
+
+            <!-- Sub-Category Name -->
+            <div class="form-group">
+                <label for="name" class="form-label">
+                    Sub-Category Name <span class="required">*</span>
+                </label>
+                <input id="name" type="text" formControlName="name" class="form-input"
+                    placeholder="Enter sub-category name" [class.error]="hasFieldError('name')" />
+                <span *ngIf="hasFieldError('name')" class="error-message">
+                    {{ getFieldError('name') }}
+                </span>
+            </div>
+
+            <!-- Description -->
+            <div class="form-group">
+                <label for="description" class="form-label">Description</label>
+                <textarea id="description" formControlName="description" class="form-input" rows="3"
+                    placeholder="Enter sub-category description (optional)"></textarea>
+            </div>
+
+            <!-- Active Status -->
+            <div class="form-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" formControlName="isActive" class="form-checkbox" />
+                    <span>Active</span>
+                </label>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" class="btn-secondary" (click)="onCancel()" [disabled]="isLoading">
+                Cancel
+            </button>
+            <button type="submit" class="btn-primary" [disabled]="isLoading || subCategoryForm.invalid">
+                <mat-spinner *ngIf="isLoading" diameter="20"></mat-spinner>
+                <span *ngIf="!isLoading">{{ isEditMode ? 'Update' : 'Create' }}</span>
+            </button>
+        </div>
+    </form>
+</div>

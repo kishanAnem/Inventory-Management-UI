@@ -1,0 +1,46 @@
+/**
+ * Sub-Category Form Component Styles
+ * Uses global modal, form, and button styles from styles.scss
+ * Material select-specific overrides below
+ */
+
+/* Material Select Custom Styling for Mat-Select Component */
+::ng-deep {
+    .mat-mdc-select {
+        width: 100%;
+        font-family: inherit;
+    }
+
+    .mat-mdc-select-trigger {
+        padding: 10px 12px;
+        border: 1px solid var(--border-light);
+        border-radius: 6px;
+        font-size: 14px;
+        transition: all 0.2s;
+    }
+
+    .mat-mdc-select-value {
+        color: var(--form-text);
+    }
+
+    .mat-mdc-select-placeholder {
+        color: var(--form-text-muted);
+    }
+
+    .mat-mdc-select-arrow {
+        color: var(--form-text-muted);
+    }
+
+    .mat-mdc-select:focus .mat-mdc-select-trigger {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(0, 128, 96, 0.1);
+    }
+
+    .mat-mdc-select.error .mat-mdc-select-trigger {
+        border-color: var(--error);
+
+        &:focus {
+            box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+        }
+    }
+}

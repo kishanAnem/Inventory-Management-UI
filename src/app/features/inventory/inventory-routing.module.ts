@@ -15,6 +15,10 @@ export const inventoryRoutes: Routes = [
     loadComponent: () => import('./components/add-product/add-product.component').then(m => m.AddProductComponent)
   },
   {
+    path: 'categories',
+    loadComponent: () => import('./components/category-management/category-management.component').then(m => m.CategoryManagementComponent)
+  },
+  {
     path: 'add',
     loadComponent: () => import('./components/inventory-form/inventory-form.component').then(m => m.InventoryFormComponent)
   },
