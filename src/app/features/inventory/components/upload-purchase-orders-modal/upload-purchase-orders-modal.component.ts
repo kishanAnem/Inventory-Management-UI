@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { MatDialogRef, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { InventoryService } from '../../services/inventory.service';
+import { PurchaseOrderService } from '../../services/purchase-order.service';
 import { ExcelUploadComponent, UploadConfig, UploadResult } from '../../../../shared/components/excel-upload/excel-upload.component';
 
 export interface PurchaseOrderResult {
@@ -29,7 +29,7 @@ export interface PurchaseOrderResult {
 })
 export class UploadPurchaseOrdersModalComponent {
   private dialogRef = inject(MatDialogRef<UploadPurchaseOrdersModalComponent>);
-  private inventoryService = inject(InventoryService);
+  private purchaseOrderService = inject(PurchaseOrderService);
 
   @ViewChild(ExcelUploadComponent) excelUpload!: ExcelUploadComponent;
 
@@ -40,7 +40,7 @@ export class UploadPurchaseOrdersModalComponent {
   };
 
   onFileUpload(file: File) {
-    this.inventoryService.uploadPurchaseOrders(file).subscribe({
+    this.purchaseOrderService.uploadPurchaseOrders(file).subscribe({
       next: (response) => {
         console.log('Upload response:', response);
         // Map the API response to our UploadResult format

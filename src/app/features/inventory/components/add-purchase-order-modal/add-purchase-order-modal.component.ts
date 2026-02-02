@@ -10,17 +10,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { InventoryService } from '../../services/inventory.service';
-
-export interface CreatePurchaseOrderRequest {
-  productId: string;
-  qtyOrdered: number;
-  unitCost: number;
-  purchaseDate: string;
-  poNumber: string;
-  supplierName: string;
-  expiryDate?: string;
-}
+import { PurchaseOrderService, CreatePurchaseOrderRequest } from '../../services/purchase-order.service';
 
 @Component({
   selector: 'app-add-purchase-order-modal',
@@ -43,9 +33,9 @@ export interface CreatePurchaseOrderRequest {
 export class AddPurchaseOrderModalComponent {
   private fb = inject(FormBuilder);
   private dialogRef = inject(MatDialogRef<AddPurchaseOrderModalComponent>);
-  private inventoryService = inject(InventoryService);
+  private purchaseOrderService = inject(PurchaseOrderService);
   private snackBar = inject(MatSnackBar);
-  
+
   purchaseOrderForm: FormGroup;
   isSubmitting = false;
   errorMessage = signal<string | null>(null);
@@ -69,7 +59,7 @@ export class AddPurchaseOrderModalComponent {
       this.isSubmitting = true;
       this.errorMessage.set(null);
       this.successMessage.set(null);
-      
+
       const formValue = this.purchaseOrderForm.value;
       const purchaseOrderData: CreatePurchaseOrderRequest = {
         productId: formValue.productId,
@@ -80,8 +70,8 @@ export class AddPurchaseOrderModalComponent {
         supplierName: formValue.supplierName,
         expiryDate: formValue.expiryDate ? this.formatDate(formValue.expiryDate) : undefined
       };
-      
-      this.inventoryService.createPurchaseOrder(purchaseOrderData).subscribe({
+
+      this.purchaseOrderService.createPurchaseOrder(purchaseOrderData).subscribe({
         next: (createdPO) => {
           this.successMessage.set('Purchase order created successfully!');
           this.snackBar.open('Purchase order created successfully!', 'Close', {
@@ -125,21 +115,21 @@ export class AddPurchaseOrderModalComponent {
 
   getErrorMessage(fieldName: string): string {
     const control = this.purchaseOrderForm.get(fieldName);
-    
+
     if (control?.hasError('required')) {
       return `${this.getFieldLabel(fieldName)} is required`;
     }
-    
+
     if (control?.hasError('min')) {
       const minValue = control.errors?.['min']?.min;
       return `${this.getFieldLabel(fieldName)} must be at least ${minValue}`;
     }
-    
+
     if (control?.hasError('minlength')) {
       const minLength = control.errors?.['minlength']?.requiredLength;
       return `${this.getFieldLabel(fieldName)} must be at least ${minLength} characters`;
     }
-    
+
     return 'Invalid field';
   }
 
