@@ -1,0 +1,425 @@
+<div class="label-printing-page">
+    <mat-stepper [linear]="true" [(selectedIndex)]="currentStep" #stepper>
+
+        <!-- Step 1: Product Selection -->
+        <mat-step [completed]="canProceedToConfiguration()">
+            <ng-template matStepLabel>Select Products</ng-template>
+
+            <div class="step-content">
+                <div class="product-selection-layout">
+
+                    <!-- Left Panel: Product List -->
+                    <div class="product-list-panel">
+                        <div class="search-filters">
+                            <div class="form-field search-field">
+                                <div class="input-with-icon">
+                                    <mat-icon class="search-icon">search</mat-icon>
+                                    <input type="text" class="field-input" placeholder="Search products..."
+                                        [ngModel]="searchQuery()" (ngModelChange)="onSearchChange($event)">
+                                </div>
+                            </div>
+
+                            <div class="form-field">
+                                <select class="field-input field-select" [ngModel]="selectedCategory()"
+                                    (ngModelChange)="onCategoryChange($event)">
+                                    <option value="all">All Categories</option>
+                                    @for (category of categories(); track category.id) {
+                                    <option [value]="category.id">{{ category.name }}</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="form-field">
+                                <select class="field-input field-select" [ngModel]="selectedSubCategory()"
+                                    (ngModelChange)="onSubCategoryChange($event)"
+                                    [disabled]="selectedCategory() === 'all' || subCategories().length === 0">
+                                    <option value="all">All Sub-Categories</option>
+                                    @for (subCategory of subCategories(); track subCategory.id) {
+                                    <option [value]="subCategory.id">{{ subCategory.name }}</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <button type="button" class="btn btn-primary select-all-btn" (click)="selectAllProducts()">
+                                <mat-icon>select_all</mat-icon>
+                                Select All
+                            </button>
+                        </div>
+
+                        <div class="product-list">
+                            @if (loading()) {
+                            <div class="loading">
+                                <mat-spinner diameter="50"></mat-spinner>
+                                <p>Loading products...</p>
+                            </div>
+                            } @else if (filteredProducts().length === 0) {
+                            <div class="empty-state">
+                                <mat-icon>inventory_2</mat-icon>
+                                <p>No products found</p>
+                            </div>
+                            } @else {
+                            @for (product of filteredProducts(); track product.id) {
+                            <div class="product-item" [class.selected]="isProductSelected(product.id)">
+                                <mat-checkbox [checked]="isProductSelected(product.id)"
+                                    (change)="toggleProductSelection(product)" class="product-checkbox">
+                                </mat-checkbox>
+                                <div class="product-info" (click)="toggleProductSelection(product)">
+                                    <div class="product-name">{{ product.name }}</div>
+                                    <div class="product-details">
+                                        <span class="barcode">{{ product.barcode }}</span>
+                                        <span class="price">${{ product.price.toFixed(2) }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            }
+                            }
+                        </div>
+
+                        <!-- Pagination -->
+                        @if (!loading() && filteredProducts().length > 0) {
+                        <app-pagination [config]="paginationConfig()" (pageChange)="onPageChange($event)">
+                        </app-pagination>
+                        }
+                    </div>
+
+                    <!-- Right Panel: Selected Products -->
+                    <div class="selected-panel">
+                        <div class="panel-header">
+                            <h3>Selected Products ({{ selectedProducts().length }})</h3>
+                            @if (selectedProducts().length > 0) {
+                            <button type="button" class="btn btn-secondary btn-sm" (click)="clearSelection()">
+                                <mat-icon>clear_all</mat-icon>
+                                Clear All
+                            </button>
+                            }
+                        </div>
+
+                        <div class="selected-list">
+                            @if (selectedProducts().length === 0) {
+                            <div class="empty-message">
+                                <mat-icon>label_off</mat-icon>
+                                <p>No products selected</p>
+                                <small>Click on products to add them</small>
+                            </div>
+                            } @else {
+                            @for (selected of selectedProducts(); track selected.product.id) {
+                            <div class="selected-item">
+                                <div class="item-info">
+                                    <div class="item-name">{{ selected.product.name }}</div>
+                                    <div class="item-barcode">{{ selected.product.barcode }}</div>
+                                </div>
+                                <div class="item-controls">
+                                    <div class="quantity-control">
+                                        <label class="qty-label">Qty</label>
+                                        <input type="number" class="qty-input" min="1" [ngModel]="selected.quantity"
+                                            (ngModelChange)="updateProductQuantity(selected.product.id, $event)">
+                                    </div>
+                                    <button mat-icon-button class="remove-btn"
+                                        (click)="removeSelectedProduct(selected.product.id)">
+                                        <mat-icon>close</mat-icon>
+                                    </button>
+                                </div>
+                            </div>
+                            }
+
+                            <div class="summary">
+                                <div class="summary-row">
+                                    <span>Total Labels:</span>
+                                    <strong>{{ totalLabels() }}</strong>
+                                </div>
+                            </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step-actions">
+                    <button type="button" class="btn btn-secondary" routerLink="/inventory">Cancel</button>
+                    <button type="button" class="btn btn-primary" matStepperNext
+                        [disabled]="!canProceedToConfiguration()">
+                        Next: Configure
+                        <mat-icon>arrow_forward</mat-icon>
+                    </button>
+                </div>
+            </div>
+        </mat-step>
+
+        <!-- Step 2: Label Configuration -->
+        <mat-step [completed]="true">
+            <ng-template matStepLabel>Configure Layout</ng-template>
+
+            <div class="step-content">
+                <div class="configuration-layout">
+
+                    <!-- Left: Settings -->
+                    <div class="settings-panel">
+                        <h3>Label Configuration</h3>
+
+                        <div class="config-section">
+                            <h4>Preset Templates</h4>
+                            <div class="form-field full-width">
+                                <select class="field-input field-select"
+                                    (change)="loadPreset($any($event.target).value)">
+                                    <option value="">Custom</option>
+                                    @for (preset of presets; track preset.id) {
+                                    <option [value]="preset.id">{{ preset.name }} - {{ preset.description }}
+                                    </option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="config-section">
+                            <h4>Paper Settings</h4>
+                            <div class="form-field full-width">
+                                <select class="field-input field-select" [ngModel]="currentConfiguration().paperSize"
+                                    (ngModelChange)="updateConfiguration({ paperSize: $event })">
+                                    <option value="A4">A4 (210 × 297 mm)</option>
+                                    <option value="Letter">Letter (215.9 × 279.4 mm)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="config-section">
+                            <h4>Label Dimensions (mm)</h4>
+                            <div class="form-row">
+                                <div class="form-field">
+                                    <label class="field-label">Width</label>
+                                    <input type="number" class="field-input"
+                                        [ngModel]="currentConfiguration().labelWidth"
+                                        (ngModelChange)="updateConfiguration({ labelWidth: $event }); calculateTotals()">
+                                </div>
+                                <div class="form-field">
+                                    <label class="field-label">Height</label>
+                                    <input type="number" class="field-input"
+                                        [ngModel]="currentConfiguration().labelHeight"
+                                        (ngModelChange)="updateConfiguration({ labelHeight: $event }); calculateTotals()">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="config-section">
+                            <h4>Layout</h4>
+                            <div class="form-row">
+                                <div class="form-field">
+                                    <label class="field-label">Labels Per Row</label>
+                                    <input type="number" class="field-input" min="1"
+                                        [ngModel]="currentConfiguration().labelsPerRow"
+                                        (ngModelChange)="updateConfiguration({ labelsPerRow: $event }); calculateTotals()">
+                                </div>
+                                <div class="form-field">
+                                    <label class="field-label">Labels Per Column</label>
+                                    <input type="number" class="field-input" min="1"
+                                        [ngModel]="currentConfiguration().labelsPerColumn"
+                                        (ngModelChange)="updateConfiguration({ labelsPerColumn: $event }); calculateTotals()">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="config-section">
+                            <h4>Spacing (mm)</h4>
+                            <div class="form-row">
+                                <div class="form-field">
+                                    <label class="field-label">Horizontal Gap</label>
+                                    <input type="number" class="field-input"
+                                        [ngModel]="currentConfiguration().horizontalGap"
+                                        (ngModelChange)="updateConfiguration({ horizontalGap: $event })">
+                                </div>
+                                <div class="form-field">
+                                    <label class="field-label">Vertical Gap</label>
+                                    <input type="number" class="field-input"
+                                        [ngModel]="currentConfiguration().verticalGap"
+                                        (ngModelChange)="updateConfiguration({ verticalGap: $event })">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="config-section">
+                            <h4>Margins (mm)</h4>
+                            <div class="form-row">
+                                <div class="form-field">
+                                    <label class="field-label">Top</label>
+                                    <input type="number" class="field-input"
+                                        [ngModel]="currentConfiguration().topMargin"
+                                        (ngModelChange)="updateConfiguration({ topMargin: $event })">
+                                </div>
+                                <div class="form-field">
+                                    <label class="field-label">Left</label>
+                                    <input type="number" class="field-input"
+                                        [ngModel]="currentConfiguration().leftMargin"
+                                        (ngModelChange)="updateConfiguration({ leftMargin: $event })">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Preview -->
+                    <div class="preview-panel">
+                        <h3>Layout Preview</h3>
+                        <div class="layout-preview">
+                            <div class="page-mockup">
+                                <div class="labels-grid"
+                                    [style.grid-template-columns]="'repeat(' + currentConfiguration().labelsPerRow + ', 1fr)'"
+                                    [style.grid-template-rows]="'repeat(' + currentConfiguration().labelsPerColumn + ', 1fr)'">
+                                    @for (item of [].constructor(currentConfiguration().labelsPerRow *
+                                    currentConfiguration().labelsPerColumn); track $index) {
+                                    <div class="label-cell"></div>
+                                    }
+                                </div>
+                            </div>
+                            <div class="preview-info">
+                                <p><strong>{{ currentConfiguration().labelsPerRow *
+                                        currentConfiguration().labelsPerColumn }}</strong> labels per page</p>
+                                <p><strong>{{ totalPages() }}</strong> pages needed ({{ totalLabels() }} labels)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step-actions">
+                    <button type="button" class="btn btn-secondary" matStepperPrevious>
+                        <mat-icon>arrow_back</mat-icon>
+                        Back
+                    </button>
+                    <button type="button" class="btn btn-primary" matStepperNext>
+                        Next: Design Content
+                        <mat-icon>arrow_forward</mat-icon>
+                    </button>
+                </div>
+            </div>
+        </mat-step>
+
+        <!-- Step 3: Label Content Design -->
+        <mat-step [completed]="true">
+            <ng-template matStepLabel>Design Label</ng-template>
+
+            <div class="step-content">
+                <div class="design-layout">
+
+                    <!-- Left: Content Settings -->
+                    <div class="content-panel">
+                        <h3>Label Content</h3>
+
+                        <div class="config-section">
+                            <h4>Code Type</h4>
+                            <mat-radio-group [ngModel]="currentConfiguration().template.codeType"
+                                (ngModelChange)="updateCodeType($event)">
+                                <mat-radio-button value="CODE128">Barcode (CODE128)</mat-radio-button>
+                                <mat-radio-button value="QR">QR Code</mat-radio-button>
+                            </mat-radio-group>
+                        </div>
+
+                        <div class="config-section">
+                            <h4>Display Fields</h4>
+                            @for (field of currentConfiguration().template.fields; track field.fieldName) {
+                            <div class="field-control">
+                                <mat-checkbox [checked]="field.visible" (change)="field.visible = $event.checked">
+                                    {{ getFieldDisplayName(field.fieldName, field.displayLabel) }}
+                                </mat-checkbox>
+                            </div>
+                            }
+                        </div>
+
+                        <div class="config-section">
+                            <h4>Typography</h4>
+                            <div class="form-field full-width">
+                                <label class="field-label">Font Size</label>
+                                <input type="number" class="field-input"
+                                    [ngModel]="currentConfiguration().template.fontSize"
+                                    (ngModelChange)="updateFontSize($event)">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Label Preview -->
+                    <div class="label-preview-panel">
+                        <h3>Label Preview</h3>
+                        <div class="label-mockup">
+                            <div class="mockup-label">
+                                <p class="label-text-preview"><strong>Product Name</strong></p>
+                                @if (currentConfiguration().template.codeType === 'QR') {
+                                <div class="qr-placeholder">QR</div>
+                                } @else {
+                                <div class="barcode-placeholder">||||||||||||||||</div>
+                                }
+                                <p class="label-text-preview small">1234567890</p>
+                                <p class="label-text-preview">Price: $25.99</p>
+                            </div>
+                        </div>
+                        <p class="preview-note">This is a mockup. Real preview will be shown in the next step.</p>
+                    </div>
+                </div>
+
+                <div class="step-actions">
+                    <button type="button" class="btn btn-secondary" matStepperPrevious>
+                        <mat-icon>arrow_back</mat-icon>
+                        Back
+                    </button>
+                    <button type="button" class="btn btn-primary" (click)="generatePreview(); stepper.next()">
+                        Generate Preview
+                        <mat-icon>arrow_forward</mat-icon>
+                    </button>
+                </div>
+            </div>
+        </mat-step>
+
+        <!-- Step 4: Preview & Print -->
+        <mat-step>
+            <ng-template matStepLabel>Preview & Print</ng-template>
+
+            <div class="step-content">
+                @if (isGenerating()) {
+                <div class="generating-state">
+                    <mat-spinner diameter="60"></mat-spinner>
+                    <h3>Generating PDF...</h3>
+                    <p>Please wait while we create your labels</p>
+                </div>
+                } @else if (previewUrl()) {
+                <div class="preview-container">
+                    <div class="preview-toolbar">
+                        <div class="preview-info">
+                            <span><strong>{{ totalLabels() }}</strong> labels</span>
+                            <span><strong>{{ totalPages() }}</strong> pages</span>
+                        </div>
+                        <div class="preview-actions">
+                            <button type="button" class="btn btn-secondary" (click)="downloadPDF()">
+                                <mat-icon>download</mat-icon>
+                                Download PDF
+                            </button>
+                            <button type="button" class="btn btn-primary" (click)="printLabels()"
+                                [disabled]="isPrinting()">
+                                <mat-icon>print</mat-icon>
+                                {{ isPrinting() ? 'Printing...' : 'Print Now' }}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="pdf-viewer">
+                        <iframe [src]="safePreviewUrl" frameborder="0"></iframe>
+                    </div>
+                </div>
+                } @else {
+                <div class="no-preview">
+                    <mat-icon>error_outline</mat-icon>
+                    <p>Preview not available</p>
+                    <button type="button" class="btn btn-primary" (click)="generatePreview()">
+                        Regenerate Preview
+                    </button>
+                </div>
+                }
+
+                <div class="step-actions">
+                    <button type="button" class="btn btn-secondary" (click)="goToStep(2)">
+                        <mat-icon>arrow_back</mat-icon>
+                        Back to Design
+                    </button>
+                    <button type="button" class="btn btn-primary" routerLink="/inventory">
+                        <mat-icon>check_circle</mat-icon>
+                        Done
+                    </button>
+                </div>
+            </div>
+        </mat-step>
+
+    </mat-stepper>
+</div>

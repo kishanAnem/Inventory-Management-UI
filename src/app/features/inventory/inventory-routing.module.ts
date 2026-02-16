@@ -27,6 +27,10 @@ export const inventoryRoutes: Routes = [
     loadComponent: () => import('./components/inventory-form/inventory-form.component').then(m => m.InventoryFormComponent)
   },
   {
+    path: 'label-printing',
+    loadComponent: () => import('./components/label-printing/label-printing.component').then(m => m.LabelPrintingComponent)
+  },
+  {
     path: ':id',
     loadComponent: () => import('./components/purchase-order/purchase-order.component').then(m => m.PurchaseOrderComponent)
   }
