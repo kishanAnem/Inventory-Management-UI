@@ -45,6 +45,8 @@ export interface PaginationParams {
   searchQuery?: string;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
+  categoryId?: string;
+  subCategoryId?: string;
 }
 
 export interface PaginatedResponse<T> {
@@ -95,6 +97,12 @@ export class InventoryService {
       }
       if (params.sortOrder) {
         queryParts.push(`sortOrder=${params.sortOrder}`);
+      }
+      if (params.categoryId) {
+        queryParts.push(`categoryId=${params.categoryId}`);
+      }
+      if (params.subCategoryId) {
+        queryParts.push(`subCategoryId=${params.subCategoryId}`);
       }
 
       if (queryParts.length > 0) {

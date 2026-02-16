@@ -48,6 +48,7 @@ export class SidebarComponent {
       children: [
         { id: 'all-products', label: 'All products', icon: '', route: '/inventory' },
         { id: 'categories', label: 'Categories', icon: '', route: '/inventory/categories' },
+        { id: 'label-printing', label: 'Label Printing', icon: '', route: '/inventory/label-printing' },
         // { id: 'collections', label: 'Collections', icon: '', route: '/inventory/collections' },
         // { id: 'inventory', label: 'Inventory', icon: '', route: '/inventory/stock' },
         { id: 'purchase-orders', label: 'Purchase orders', icon: '', route: '/inventory/purchase-orders' },
