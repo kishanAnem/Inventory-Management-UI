@@ -17,7 +17,7 @@ export class AppComponent {
   showLayout = signal(true);
 
   // Routes that should NOT show the main layout (topbar/sidebar)
-  private readonly authRoutes = ['/login', '/callback', '/unauthorized', '/debug', '/tenant-setup'];
+  private readonly authRoutes = ['/login', '/callback', '/unauthorized', '/debug'];
 
   constructor(private router: Router) {
     // Listen to route changes to determine if layout should be shown

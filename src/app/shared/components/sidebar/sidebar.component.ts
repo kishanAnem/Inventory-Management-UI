@@ -61,12 +61,12 @@ export class SidebarComponent {
       icon: 'receipt',
       route: '/inventory/purchase-orders'
     },
-    {
-      id: 'customers',
-      label: 'Customers',
-      icon: 'people',
-      route: '/customers'
-    },
+    // {
+    //   id: 'customers',
+    //   label: 'Customers',
+    //   icon: 'people',
+    //   route: '/customers'
+    // },
     // {
     //   id: 'marketing',
     //   label: 'Marketing',
