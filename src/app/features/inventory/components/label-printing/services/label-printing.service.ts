@@ -6,7 +6,7 @@ import { TenantService, TenantResponse } from '../../../../../core/services/tena
 import pdfMake from 'pdfmake/build/pdfmake';
 import pdfFonts from 'pdfmake/build/vfs_fonts';
 import QRCode from 'qrcode';
-import * as bwipjs from 'browbwip-js';
+import * as bwipjs from 'bwip-js';
 
 // Initialize pdfMake with fonts
 (window as any).pdfMake = pdfMake;
