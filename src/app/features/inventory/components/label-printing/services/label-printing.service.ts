@@ -1,8 +1,12 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { LabelConfiguration, LABEL_PRESETS, LabelPreset } from '../models/label-configuration.interface';
 import { PrintJob, SelectedProduct, PrintResult } from '../models/print-job.interface';
 import { InventoryItem } from '../../../services/inventory.service';
 import { TenantService, TenantResponse } from '../../../../../core/services/tenant.service';
+import { SnackbarService } from '../../../../../core/services/snackbar.service';
+import { firstValueFrom } from 'rxjs';
+import { environment } from '../../../../../../environments/environment';
 import pdfMake from 'pdfmake/build/pdfmake';
 import pdfFonts from 'pdfmake/build/vfs_fonts';
 import QRCode from 'qrcode';
@@ -18,11 +22,17 @@ import * as bwipjs from 'bwip-js';
 export class LabelPrintingService {
     private readonly STORAGE_KEY = 'label_printing_configs';
     private readonly STORAGE_SELECTED_KEY = 'label_printing_selected_products';
+    private readonly PRESETS_API_URL = `${environment.apiUrl}/api/label-presets`;
+    private readonly CURRENCY_SYMBOL = '₹';
     private tenantName: string = '';
     private barcodeCache = new Map<string, string>(); // Cache for generated barcode images
     private bwipjsModule: any = null; // Cache for bwip-js module
 
-    constructor(private tenantService: TenantService) {
+    constructor(
+        private tenantService: TenantService,
+        private http: HttpClient,
+        private snackbar: SnackbarService
+    ) {
         // Load and subscribe to tenant name
         this.tenantService.loadCurrentTenant().subscribe({
             next: (tenant: TenantResponse) => {
@@ -47,24 +57,52 @@ export class LabelPrintingService {
         return LABEL_PRESETS;
     }
 
+    async getAllPresets(): Promise<LabelPreset[]> {
+        const builtInPresets = [...LABEL_PRESETS];
+        const savedConfigurations = await this.getSavedConfigurationsFromDb();
+
+        const savedPresets: LabelPreset[] = savedConfigurations.map((config, index) => ({
+            id: config.id || `saved-${index + 1}`,
+            name: config.name || `Custom Preset ${index + 1}`,
+            description: 'Saved preset',
+            configuration: { ...config }
+        }));
+
+        return [...builtInPresets, ...savedPresets];
+    }
+
     getPresetById(id: string): LabelPreset | undefined {
         return LABEL_PRESETS.find(preset => preset.id === id);
     }
 
     // ==================== Configuration Management ====================
 
-    saveConfiguration(config: LabelConfiguration): void {
-        const configs = this.getSavedConfigurations();
-        const existingIndex = configs.findIndex(c => c.id === config.id);
+    async saveConfiguration(config: LabelConfiguration): Promise<void> {
+        const isUpdate = !!config.id;
 
-        if (existingIndex >= 0) {
-            configs[existingIndex] = config;
-        } else {
-            config.id = this.generateId();
-            configs.push(config);
+        try {
+            if (isUpdate) {
+                const updated = await firstValueFrom(
+                    this.http.put<LabelConfiguration>(`${this.PRESETS_API_URL}/${config.id}`, config)
+                );
+                this.upsertConfigurationLocally(updated || config);
+            } else {
+                const createPayload: LabelConfiguration = { ...config, id: undefined };
+                const created = await firstValueFrom(
+                    this.http.post<LabelConfiguration>(this.PRESETS_API_URL, createPayload)
+                );
+
+                const configToStore = created || { ...config, id: this.generateId() };
+                this.upsertConfigurationLocally(configToStore);
+            }
+        } catch (error) {
+            const fallbackConfig = isUpdate
+                ? config
+                : { ...config, id: this.generateId() };
+
+            this.upsertConfigurationLocally(fallbackConfig);
+            console.warn('Failed to persist label preset to DB, kept in local storage:', error);
         }
-
-        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(configs));
     }
 
     getSavedConfigurations(): LabelConfiguration[] {
@@ -72,10 +110,44 @@ export class LabelPrintingService {
         return stored ? JSON.parse(stored) : [];
     }
 
-    deleteConfiguration(id: string): void {
+    async deleteConfiguration(id: string): Promise<void> {
         const configs = this.getSavedConfigurations();
         const filtered = configs.filter(c => c.id !== id);
         localStorage.setItem(this.STORAGE_KEY, JSON.stringify(filtered));
+
+        try {
+            await firstValueFrom(this.http.delete(`${this.PRESETS_API_URL}/${id}`));
+        } catch (error) {
+            console.warn('Failed to delete label preset from DB, removed locally only:', error);
+        }
+    }
+
+    private async getSavedConfigurationsFromDb(): Promise<LabelConfiguration[]> {
+        try {
+            const response = await firstValueFrom(this.http.get<any>(this.PRESETS_API_URL));
+            const configs = Array.isArray(response)
+                ? response as LabelConfiguration[]
+                : (Array.isArray(response?.items) ? response.items as LabelConfiguration[] : []);
+
+            localStorage.setItem(this.STORAGE_KEY, JSON.stringify(configs));
+            return configs;
+        } catch (error) {
+            console.warn('Failed to load label presets from DB, using local storage:', error);
+            return this.getSavedConfigurations();
+        }
+    }
+
+    private upsertConfigurationLocally(config: LabelConfiguration): void {
+        const configs = this.getSavedConfigurations();
+        const existingIndex = configs.findIndex(c => c.id === config.id);
+
+        if (existingIndex >= 0) {
+            configs[existingIndex] = config;
+        } else {
+            configs.push(config);
+        }
+
+        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(configs));
     }
 
     // ==================== Product Selection Management ====================
@@ -118,15 +190,34 @@ export class LabelPrintingService {
             console.warn('Barcode display is DISABLED in template config!');
         }
 
+        const labelsPerPage = config.labelsPerRow * config.labelsPerColumn;
+        const barcodeMaxHeight = Math.max(6, Math.min(config.labelHeight * 0.35, 12));
+
         let html = `
             <style>
+                .preview-pages {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 8mm;
+                }
+                .page-sheet {
+                    width: ${config.pageWidth}mm;
+                    min-height: ${config.pageHeight}mm;
+                    background: white;
+                    box-shadow: 0 1mm 3mm rgba(0, 0, 0, 0.12);
+                    box-sizing: border-box;
+                }
                 .label-container {
                     display: grid;
                     grid-template-columns: repeat(${config.labelsPerRow}, ${config.labelWidth}mm);
+                    grid-template-rows: repeat(${config.labelsPerColumn}, ${config.labelHeight}mm);
                     grid-gap: ${config.horizontalGap}mm ${config.verticalGap}mm;
                     padding: ${config.topMargin}mm ${config.rightMargin}mm ${config.bottomMargin}mm ${config.leftMargin}mm;
                     font-family: 'Roboto', Arial, sans-serif;
-                    background: #f5f5f5;
+                    background: white;
+                    align-content: start;
+                    box-sizing: border-box;
                 }
                 .label {
                     width: ${config.labelWidth}mm;
@@ -158,11 +249,15 @@ export class LabelPrintingService {
                 }
                 .barcode-image img {
                     max-width: 80%;
-                    max-height: 15mm;
+                    max-height: ${barcodeMaxHeight}mm;
                     width: auto;
                     height: auto;
                     object-fit: contain;
                     background: white;
+                }
+                .empty-label {
+                    border: 1px dashed #e2e8f0;
+                    background: #fafafa;
                 }
                 .barcode-placeholder {
                     background: #e0e0e0;
@@ -176,6 +271,14 @@ export class LabelPrintingService {
                     page-break-after: always;
                 }
                 @media print {
+                    .preview-pages {
+                        gap: 0;
+                    }
+                    .page-sheet {
+                        box-shadow: none;
+                        width: auto;
+                        min-height: auto;
+                    }
                     .label-container {
                         background: white;
                         padding: ${config.topMargin}mm ${config.rightMargin}mm ${config.bottomMargin}mm ${config.leftMargin}mm;
@@ -191,14 +294,10 @@ export class LabelPrintingService {
                     }
                 }
             </style>
-            <div class="label-container">
+            <div class="preview-pages"><div class="page-sheet"><div class="label-container">
         `;
 
         let labelCount = 0;
-        const labelsPerPage = config.labelsPerRow * config.labelsPerColumn;
-
-        const labelWidth = this.mmToPoints(config.labelWidth);
-        const labelHeight = this.mmToPoints(config.labelHeight);
 
         for (const selectedProduct of printJob.products) {
             for (let i = 0; i < selectedProduct.quantity; i++) {
@@ -263,12 +362,21 @@ export class LabelPrintingService {
 
                 // Add page break after each page worth of labels
                 if (labelCount % labelsPerPage === 0 && labelCount < printJob.totalLabels) {
-                    html += '</div><div class="page-break"></div><div class="label-container">';
+                    html += '</div></div><div class="page-break"></div><div class="page-sheet"><div class="label-container">';
                 }
             }
         }
 
-        html += '</div>';
+        // Fill remaining cells on last page so preview always shows full configured grid
+        const remainder = labelCount % labelsPerPage;
+        if (remainder > 0) {
+            const emptyLabelsToAdd = labelsPerPage - remainder;
+            for (let i = 0; i < emptyLabelsToAdd; i++) {
+                html += '<div class="label empty-label"></div>';
+            }
+        }
+
+        html += '</div></div></div>';
 
         console.log('HTML preview generated with', labelCount, 'labels');
         return html;
@@ -327,80 +435,15 @@ export class LabelPrintingService {
             const calculatedTimeout = 180000; // Fixed 3 minutes timeout
             console.log(`Using fixed timeout of ${calculatedTimeout}ms (3 minutes) for ${totalLabels} labels`);
 
-            return new Promise<PrintResult>((resolve, reject) => {
-                // Set a timeout to detect if getBase64 hangs
-                const timeout = setTimeout(() => {
-                    console.error(`PDF generation timed out after ${calculatedTimeout}ms`);
-                    console.error('The document may be too complex. Current cache size:', this.barcodeCache.size);
-                    reject(new Error(`PDF generation timed out after ${calculatedTimeout / 1000} seconds. Try reducing the number of labels.`));
-                }, calculatedTimeout);
+            const blob = await this.createPdfBlobWithTimeout(docDefinition, calculatedTimeout);
+            const totalTime = Date.now() - startTime;
+            console.log(`PDF blob received: ${blob.size} bytes in ${totalTime}ms`);
 
-                // Log progress indicator every 3 seconds
-                const progressTimer = setInterval(() => {
-                    console.log('PDF generation in progress... still waiting for getBase64 to complete');
-                }, 3000);
-
-                try {
-                    console.log('Creating PDF with pdfMake...');
-                    console.log('Document content structure:', {
-                        pages: docDefinition.content?.length || 0,
-                        pageSize: docDefinition.pageSize,
-                        orientation: docDefinition.pageOrientation
-                    });
-
-                    const pdfStartTime = Date.now();
-                    const pdf = pdfMake.createPdf(docDefinition);
-                    console.log(`✓ PDF object created in ${Date.now() - pdfStartTime}ms`);
-                    console.log('Now calling getBase64 - THIS IS WHERE IT MAY HANG...');
-
-                    // Use getBase64 instead of getBlob as it's more reliable for large documents
-                    const getBase64Start = Date.now();
-                    (pdf as any).getBase64((base64: string) => {
-                        console.log(`✓ getBase64 callback invoked after ${Date.now() - getBase64Start}ms`);
-                        clearTimeout(timeout);
-                        clearInterval(progressTimer);
-                        const totalTime = Date.now() - startTime;
-                        console.log(`PDF base64 received: ${base64.length} chars in ${totalTime}ms`);
-
-                        // Convert base64 to Blob
-                        try {
-                            const byteCharacters = atob(base64);
-                            const byteNumbers = new Array(byteCharacters.length);
-                            for (let i = 0; i < byteCharacters.length; i++) {
-                                byteNumbers[i] = byteCharacters.charCodeAt(i);
-                            }
-                            const byteArray = new Uint8Array(byteNumbers);
-                            const blob = new Blob([byteArray], { type: 'application/pdf' });
-
-                            console.log(`Blob created: ${blob.size} bytes`);
-
-                            // Keep cache for potential re-download/re-print
-                            // Cache will be cleared on next preview generation
-
-                            resolve({
-                                success: true,
-                                message: 'PDF generated successfully',
-                                pdfBlob: blob
-                            });
-                        } catch (conversionError) {
-                            clearTimeout(timeout);
-                            clearInterval(progressTimer);
-                            console.error('Error converting base64 to blob:', conversionError);
-                            reject(conversionError);
-                        }
-                    }, (error: any) => {
-                        clearTimeout(timeout);
-                        clearInterval(progressTimer);
-                        console.error('Error in getBase64 callback:', error);
-                        reject(error);
-                    });
-                } catch (pdfError) {
-                    clearTimeout(timeout);
-                    clearInterval(progressTimer);
-                    console.error('Error in pdfMake.createPdf:', pdfError);
-                    reject(pdfError);
-                }
-            });
+            return {
+                success: true,
+                message: 'PDF generated successfully',
+                pdfBlob: blob
+            };
         } catch (error) {
             console.error('Error generating PDF:', error);
             return {
@@ -408,6 +451,84 @@ export class LabelPrintingService {
                 message: `Failed to generate PDF: ${error}`
             };
         }
+    }
+
+    private createPdfBlobWithTimeout(docDefinition: any, timeoutMs: number): Promise<Blob> {
+        return new Promise<Blob>((resolve, reject) => {
+            let settled = false;
+
+            const timeout = setTimeout(() => {
+                if (settled) return;
+                settled = true;
+                reject(new Error(`PDF generation timed out after ${timeoutMs / 1000} seconds. Try reducing the number of labels.`));
+            }, timeoutMs);
+
+            const progressTimer = setInterval(() => {
+                console.log('PDF generation in progress... waiting for pdfMake output');
+            }, 3000);
+
+            const cleanup = () => {
+                clearTimeout(timeout);
+                clearInterval(progressTimer);
+            };
+
+            const complete = (blob: Blob) => {
+                if (settled) return;
+                settled = true;
+                cleanup();
+                resolve(blob);
+            };
+
+            const fail = (error: any) => {
+                if (settled) return;
+                settled = true;
+                cleanup();
+                reject(error);
+            };
+
+            const base64ToBlob = (base64: string): Blob => {
+                const byteCharacters = atob(base64);
+                const byteNumbers = new Array(byteCharacters.length);
+                for (let i = 0; i < byteCharacters.length; i++) {
+                    byteNumbers[i] = byteCharacters.charCodeAt(i);
+                }
+                return new Blob([new Uint8Array(byteNumbers)], { type: 'application/pdf' });
+            };
+
+            try {
+                const pdf = pdfMake.createPdf(docDefinition) as any;
+
+                if (typeof pdf.getBlob === 'function') {
+                    if (pdf.getBlob.length >= 1) {
+                        pdf.getBlob((blob: Blob) => complete(blob));
+                    } else {
+                        Promise.resolve(pdf.getBlob()).then((blob: Blob) => complete(blob)).catch(fail);
+                    }
+                    return;
+                }
+
+                if (typeof pdf.getBase64 === 'function') {
+                    if (pdf.getBase64.length >= 1) {
+                        pdf.getBase64((base64: string) => {
+                            try {
+                                complete(base64ToBlob(base64));
+                            } catch (conversionError) {
+                                fail(conversionError);
+                            }
+                        });
+                    } else {
+                        Promise.resolve(pdf.getBase64())
+                            .then((base64: string) => complete(base64ToBlob(base64)))
+                            .catch(fail);
+                    }
+                    return;
+                }
+
+                fail(new Error('pdfMake output API unavailable (getBlob/getBase64 not found)'));
+            } catch (pdfError) {
+                fail(pdfError);
+            }
+        });
     }
 
     private async createDocDefinition(printJob: PrintJob): Promise<any> {
@@ -473,8 +594,8 @@ export class LabelPrintingService {
         console.log('Total labels created:', allLabels.length);
         console.log('Arranging labels in grid...');
 
-        // Arrange labels in grid layout using COLUMNS instead of TABLES (simpler for pdfMake)
-        const arrangedLabels = this.arrangeLabelsInColumns(allLabels, config);
+        // Arrange labels in fixed-size table grid so dimensions and gaps are honored accurately
+        const arrangedLabels = this.arrangeLabelsInGrid(allLabels, config);
         console.log('Labels arranged into', arrangedLabels.length, 'page(s)');
 
         return arrangedLabels;
@@ -795,6 +916,7 @@ export class LabelPrintingService {
             }
 
             const widths = Array(config.labelsPerRow).fill(labelWidth);
+            const heights = Array(config.labelsPerColumn).fill(labelHeight);
 
             console.log('Page table structure:', {
                 rows: pageTable.length,
@@ -805,15 +927,16 @@ export class LabelPrintingService {
             pages.push({
                 table: {
                     widths: widths,
+                    heights: heights,
                     body: pageTable
                 },
                 layout: {
                     hLineWidth: () => 0,
                     vLineWidth: () => 0,
-                    paddingLeft: () => hGap / 2,
-                    paddingRight: () => hGap / 2,
-                    paddingTop: () => vGap / 2,
-                    paddingBottom: () => vGap / 2
+                    paddingLeft: (colIndex: number) => colIndex === 0 ? 0 : hGap / 2,
+                    paddingRight: (colIndex: number, node: any) => colIndex === node.table.widths.length - 1 ? 0 : hGap / 2,
+                    paddingTop: (rowIndex: number) => rowIndex === 0 ? 0 : vGap / 2,
+                    paddingBottom: (rowIndex: number, node: any) => rowIndex === node.table.body.length - 1 ? 0 : vGap / 2
                 },
                 pageBreak: (i < labels.length - labelsPerPage) ? 'after' : undefined
             });
@@ -830,7 +953,7 @@ export class LabelPrintingService {
             case 'name':
                 return product.name;
             case 'price':
-                return `$${product.price.toFixed(2)}`;
+                return `${this.CURRENCY_SYMBOL}${product.price.toFixed(2)}`;
             case 'barcode':
                 return product.barcode;
             default:
@@ -851,7 +974,7 @@ export class LabelPrintingService {
 
             if (!newWindow) {
                 console.error('Failed to open new window - popup might be blocked');
-                alert('Please allow popups for this site to preview the PDF');
+                this.snackbar.error('Please allow popups for this site to preview the PDF');
             } else {
                 console.log('PDF preview window opened successfully');
             }
