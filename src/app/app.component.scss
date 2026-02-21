@@ -22,9 +22,10 @@
   height: 100vh;
   overflow: hidden;
   background: #ffffff;
-  
+
   // Ensure auth pages take full screen
   :ng-deep {
+
     .login-container,
     .callback-container,
     .unauthorized-container {
@@ -45,23 +46,38 @@
   overflow-x: hidden;
   background: #f6f6f7;
   transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE and Edge */
-  
-  /* Hide scrollbar for WebKit browsers */
+  scrollbar-width: auto;
+  /* Firefox */
+  -ms-overflow-style: auto;
+  /* IE and Edge */
+
+  /* Show scrollbar for WebKit browsers */
   &::-webkit-scrollbar {
-    display: none;
-    width: 0;
-    height: 0;
+    display: block !important;
+    width: 10px !important;
+    height: 10px !important;
   }
-  
+
+  &::-webkit-scrollbar-track {
+    background: #eceef0 !important;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #bcc2c8 !important;
+    border-radius: 8px !important;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: #a5adb5 !important;
+  }
+
   &--sidebar-collapsed {
     margin-left: 56px;
   }
-  
+
   @media (max-width: 768px) {
     margin-left: 0;
-    
+
     &--sidebar-collapsed {
       margin-left: 0;
     }
@@ -74,31 +90,32 @@
 }
 
 @keyframes fadeIn {
-  from { 
-    opacity: 0; 
-    transform: translateY(10px); 
+  from {
+    opacity: 0;
+    transform: translateY(10px);
   }
-  to { 
-    opacity: 1; 
-    transform: translateY(0); 
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
 /* Material Design elevation and shadows */
-.elevation-1 { 
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+.elevation-1 {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.elevation-2 { 
-  box-shadow: 0 4px 8px rgba(0,0,0,0.12); 
+.elevation-2 {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
 }
 
-.elevation-3 { 
-  box-shadow: 0 8px 16px rgba(0,0,0,0.15); 
+.elevation-3 {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
 }
 
-.elevation-4 { 
-  box-shadow: 0 12px 24px rgba(0,0,0,0.18); 
+.elevation-4 {
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.18);
 }
 
 /* Scrollbars are now globally hidden in styles.scss */
