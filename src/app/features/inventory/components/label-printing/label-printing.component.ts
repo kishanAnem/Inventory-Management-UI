@@ -12,12 +12,13 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatRadioModule } from '@angular/material/radio';
-import { LabelConfiguration, LABEL_PRESETS } from './models/label-configuration.interface';
+import { LabelConfiguration, LABEL_PRESETS, LabelPreset } from './models/label-configuration.interface';
 import { SelectedProduct, PrintJob } from './models/print-job.interface';
 import { LabelPrintingService } from './services/label-printing.service';
 import { InventoryService, InventoryItem, PaginationParams } from '../../services/inventory.service';
 import { CategoryService, Category, SubCategory } from '../../services/category.service';
 import { PaginationComponent, PaginationConfig, PaginationChange } from '../../../../shared/components/pagination/pagination.component';
+import { SnackbarService } from '../../../../core/services/snackbar.service';
 
 @Component({
     selector: 'app-label-printing',
@@ -66,7 +67,12 @@ export class LabelPrintingComponent implements OnInit {
 
     // Step 2 & 3: Configuration
     currentConfiguration = signal<LabelConfiguration>(LABEL_PRESETS[0].configuration);
-    presets = LABEL_PRESETS;
+    presets: LabelPreset[] = LABEL_PRESETS;
+    presetName = signal<string>('');
+    selectedPresetId = signal<string>('');
+    isSavingPreset = signal<boolean>(false);
+    isDeletingPreset = signal<boolean>(false);
+    private readonly builtInPresetIds = new Set(LABEL_PRESETS.map(preset => preset.id));
 
     // Step 4: Preview
     pdfBlob = signal<Blob | null>(null);
@@ -83,7 +89,8 @@ export class LabelPrintingComponent implements OnInit {
         private inventoryService: InventoryService,
         private labelService: LabelPrintingService,
         private categoryService: CategoryService,
-        private sanitizer: DomSanitizer
+        private sanitizer: DomSanitizer,
+        private snackbar: SnackbarService
     ) { }
 
     get safePreviewUrl(): SafeResourceUrl | null {
@@ -97,9 +104,19 @@ export class LabelPrintingComponent implements OnInit {
     }
 
     ngOnInit(): void {
+        this.loadPresets();
+        this.clearSelection();
         this.loadCategories();
         this.loadProducts();
-        this.loadSavedSelection();
+    }
+
+    async loadPresets(): Promise<void> {
+        try {
+            this.presets = await this.labelService.getAllPresets();
+        } catch (error) {
+            console.error('Error loading label presets:', error);
+            this.presets = LABEL_PRESETS;
+        }
     }
 
     // ==================== Data Loading ====================
@@ -270,10 +287,16 @@ export class LabelPrintingComponent implements OnInit {
     // ==================== Step 2 & 3: Configuration ====================
 
     loadPreset(presetId: string): void {
+        this.selectedPresetId.set(presetId);
         const preset = this.presets.find(p => p.id === presetId);
         if (preset) {
             this.currentConfiguration.set({ ...preset.configuration });
         }
+    }
+
+    canDeleteSelectedPreset(): boolean {
+        const presetId = this.selectedPresetId();
+        return !!presetId && !this.builtInPresetIds.has(presetId);
     }
 
     updateConfiguration(updates: Partial<LabelConfiguration>): void {
@@ -292,17 +315,73 @@ export class LabelPrintingComponent implements OnInit {
         this.updateConfiguration({ template: updatedTemplate });
     }
 
-    saveCurrentConfiguration(name: string): void {
+    async saveCurrentConfiguration(name: string): Promise<void> {
         const config = this.currentConfiguration();
         config.name = name;
-        this.labelService.saveConfiguration(config);
+        await this.labelService.saveConfiguration(config);
+        await this.loadPresets();
+    }
+
+    async saveAsPreset(): Promise<void> {
+        const name = this.presetName().trim();
+        if (!name) {
+            this.snackbar.info('Please enter a preset name');
+            return;
+        }
+
+        this.isSavingPreset.set(true);
+        try {
+            const configToSave: LabelConfiguration = {
+                ...this.currentConfiguration(),
+                id: undefined,
+                name
+            };
+
+            await this.labelService.saveConfiguration(configToSave);
+            await this.loadPresets();
+            this.presetName.set('');
+            this.snackbar.success('Preset saved successfully');
+        } catch (error) {
+            console.error('Error saving preset:', error);
+            this.snackbar.error('Failed to save preset');
+        } finally {
+            this.isSavingPreset.set(false);
+        }
+    }
+
+    async deleteSelectedPreset(): Promise<void> {
+        const presetId = this.selectedPresetId();
+
+        if (!presetId) {
+            this.snackbar.info('Please select a preset to delete');
+            return;
+        }
+
+        if (this.builtInPresetIds.has(presetId)) {
+            this.snackbar.info('Built-in presets cannot be deleted');
+            return;
+        }
+
+        this.isDeletingPreset.set(true);
+        try {
+            await this.labelService.deleteConfiguration(presetId);
+            await this.loadPresets();
+            this.selectedPresetId.set('');
+            this.currentConfiguration.set({ ...LABEL_PRESETS[0].configuration });
+            this.snackbar.success('Preset deleted successfully');
+        } catch (error) {
+            console.error('Error deleting preset:', error);
+            this.snackbar.error('Failed to delete preset');
+        } finally {
+            this.isDeletingPreset.set(false);
+        }
     }
 
     getFieldDisplayName(fieldName: string, displayLabel: string): string {
         if (displayLabel) return displayLabel;
 
         const fieldNames: { [key: string]: string } = {
-            'tenantName': 'Tenant Name',
+            'tenantName': 'Business Name',
             'name': 'Product Name',
             'barcode': 'Barcode/QR Code',
             'price': 'Selling Price (MRP)'
@@ -317,7 +396,7 @@ export class LabelPrintingComponent implements OnInit {
 
         if (this.selectedProducts().length === 0) {
             console.warn('No products selected');
-            alert('Please select at least one product');
+            this.snackbar.info('Please select at least one product');
             return;
         }
 
@@ -340,7 +419,7 @@ export class LabelPrintingComponent implements OnInit {
             console.log('HTML preview set, signal value:', this.previewHtml());
         } catch (error) {
             console.error('Error generating preview:', error);
-            alert(`Failed to generate preview: ${error}`);
+            this.snackbar.error(`Failed to generate preview: ${error}`);
         } finally {
             this.isGenerating.set(false);
         }
@@ -348,7 +427,7 @@ export class LabelPrintingComponent implements OnInit {
 
     async downloadPDF(): Promise<void> {
         if (this.selectedProducts().length === 0) {
-            alert('No labels to download');
+            this.snackbar.info('No labels to download');
             return;
         }
 
@@ -380,12 +459,12 @@ export class LabelPrintingComponent implements OnInit {
                 console.log('PDF download initiated:', filename);
             } else {
                 console.error('PDF generation failed:', result.message);
-                alert(result.message || 'Failed to generate PDF');
+                this.snackbar.error(result.message || 'Failed to generate PDF');
             }
         } catch (error) {
             console.error('Error generating PDF for download:', error);
             const errorMessage = error instanceof Error ? error.message : String(error);
-            alert(`Failed to generate PDF: ${errorMessage}`);
+            this.snackbar.error(`Failed to generate PDF: ${errorMessage}`);
         } finally {
             this.isGenerating.set(false);
         }
@@ -393,7 +472,7 @@ export class LabelPrintingComponent implements OnInit {
 
     async printLabels(): Promise<void> {
         if (this.selectedProducts().length === 0) {
-            alert('No labels to print');
+            this.snackbar.info('No labels to print');
             return;
         }
 
@@ -424,12 +503,12 @@ export class LabelPrintingComponent implements OnInit {
                 console.log('Print dialog should be opening...');
             } else {
                 console.error('PDF generation failed:', result.message);
-                alert(result.message || 'Failed to generate PDF for printing');
+                this.snackbar.error(result.message || 'Failed to generate PDF for printing');
             }
         } catch (error) {
             console.error('Error generating PDF for printing:', error);
             const errorMessage = error instanceof Error ? error.message : String(error);
-            alert(`Failed to print: ${errorMessage}`);
+            this.snackbar.error(`Failed to print: ${errorMessage}`);
         } finally {
             setTimeout(() => this.isPrinting.set(false), 2000);
         }

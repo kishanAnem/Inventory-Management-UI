@@ -121,15 +121,17 @@
                                 </div>
                             </div>
                             }
-
-                            <div class="summary">
-                                <div class="summary-row">
-                                    <span>Total Labels:</span>
-                                    <strong>{{ totalLabels() }}</strong>
-                                </div>
-                            </div>
                             }
                         </div>
+
+                        @if (selectedProducts().length > 0) {
+                        <div class="summary">
+                            <div class="summary-row">
+                                <span>Total Labels:</span>
+                                <strong>{{ totalLabels() }}</strong>
+                            </div>
+                        </div>
+                        }
                     </div>
                 </div>
 
@@ -157,15 +159,40 @@
 
                         <div class="config-section">
                             <h4>Preset Templates</h4>
-                            <div class="form-field full-width">
-                                <select class="field-input field-select"
-                                    (change)="loadPreset($any($event.target).value)">
-                                    <option value="">Custom</option>
-                                    @for (preset of presets; track preset.id) {
-                                    <option [value]="preset.id">{{ preset.name }} - {{ preset.description }}
-                                    </option>
-                                    }
-                                </select>
+                            <div class="form-row preset-save-row">
+                                <div class="form-field">
+                                    <label class="field-label">Save Current As Preset</label>
+                                    <input type="text" class="field-input" placeholder="Enter preset name"
+                                        [ngModel]="presetName()" (ngModelChange)="presetName.set($event)" />
+                                </div>
+                                <div class="form-field preset-save-action">
+                                    <button type="button" class="btn btn-secondary" (click)="saveAsPreset()"
+                                        [disabled]="isSavingPreset()">
+                                        {{ isSavingPreset() ? 'Saving...' : 'Save Preset' }}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="config-section">
+                            <h4>Preset Templates</h4>
+                            <div class="form-row preset-select-row">
+                                <div class="form-field full-width">
+                                    <select class="field-input field-select" [ngModel]="selectedPresetId()"
+                                        (ngModelChange)="loadPreset($event)">
+                                        <option value="">Custom</option>
+                                        @for (preset of presets; track preset.id) {
+                                        <option [value]="preset.id">{{ preset.name }} - {{ preset.description }}
+                                        </option>
+                                        }
+                                    </select>
+                                </div>
+                                <div class="form-field preset-delete-action">
+                                    <button type="button" class="btn btn-secondary" (click)="deleteSelectedPreset()"
+                                        [disabled]="!canDeleteSelectedPreset() || isDeletingPreset()">
+                                        {{ isDeletingPreset() ? 'Deleting...' : 'Delete Preset' }}
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -343,7 +370,7 @@
                                 <div class="barcode-placeholder">||||||||||||||||</div>
                                 }
                                 <p class="label-text-preview small">1234567890</p>
-                                <p class="label-text-preview">Price: $25.99</p>
+                                <p class="label-text-preview">Price: ₹25.99</p>
                             </div>
                         </div>
                         <p class="preview-note">This is a mockup. Real preview will be shown in the next step.</p>

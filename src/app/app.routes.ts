@@ -21,7 +21,7 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadComponent: () => import('./features/tenant-setup/tenant-setup.component').then(m => m.TenantSetupComponent)
   },
-  
+
   // Protected routes (require tenant setup)
   {
     path: 'dashboard',
@@ -33,7 +33,7 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadChildren: () => import('./features/inventory/inventory-routing.module').then(m => m.inventoryRoutes)
   },
-  
+
   // Default redirects
   {
     path: '',

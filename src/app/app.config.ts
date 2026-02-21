@@ -4,6 +4,9 @@ import { provideStore } from '@ngrx/store';
 import { provideEffects } from '@ngrx/effects';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideAuth0 } from '@auth0/auth0-angular';
+import { importProvidersFrom } from '@angular/core';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { provideAnimations } from '@angular/platform-browser/animations';
 import { inventoryReducer } from './features/inventory/store/inventory.reducer';
 import { InventoryEffects } from './features/inventory/store/inventory.effects';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
@@ -18,6 +21,8 @@ export const appConfig: ApplicationConfig = {
     provideStore({ inventory: inventoryReducer }),
     provideEffects([InventoryEffects]),
     provideHttpClient(withInterceptors([authInterceptor])),
+    provideAnimations(),
+    importProvidersFrom(MatSnackBarModule),
     provideAuth0({
       domain: environment.auth0.domain,
       clientId: environment.auth0.clientId,

@@ -7,6 +7,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthService } from '@auth0/auth0-angular';
 import { AuthService as LocalAuthService } from '../../core/services/auth.service';
 import { Router } from '@angular/router';
+import { SnackbarService } from '../../core/services/snackbar.service';
 
 @Component({
   selector: 'app-login',
@@ -27,8 +28,9 @@ export class LoginComponent implements OnInit {
   constructor(
     public auth0: AuthService,
     private authService: LocalAuthService,
-    private router: Router
-  ) {}
+    private router: Router,
+    private snackbar: SnackbarService
+  ) { }
 
   ngOnInit() {
     // Check if user is already authenticated
@@ -43,7 +45,7 @@ export class LoginComponent implements OnInit {
   loginWithGoogle() {
     this.isLoading = true;
     console.log('Attempting login with Google...');
-    
+
     // Try direct login without specifying connection first
     this.auth0.loginWithRedirect();
   }
@@ -52,7 +54,7 @@ export class LoginComponent implements OnInit {
   loginWithPopup() {
     this.isLoading = true;
     console.log('Attempting popup login...');
-    
+
     this.auth0.loginWithPopup().subscribe({
       next: () => {
         console.log('Login successful!');
@@ -62,7 +64,7 @@ export class LoginComponent implements OnInit {
       error: (error) => {
         console.error('Login error:', error);
         this.isLoading = false;
-        alert('Login failed: ' + error.message);
+        this.snackbar.error('Login failed: ' + error.message);
       }
     });
   }
