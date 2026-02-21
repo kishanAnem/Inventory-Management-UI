@@ -2,7 +2,7 @@ import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { DomSanitizer, SafeResourceUrl, SafeHtml } from '@angular/platform-browser';
 import { MatStepperModule } from '@angular/material/stepper';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -71,6 +71,7 @@ export class LabelPrintingComponent implements OnInit {
     // Step 4: Preview
     pdfBlob = signal<Blob | null>(null);
     previewUrl = signal<string | null>(null);
+    previewHtml = signal<string | null>(null); // HTML preview instead of PDF
     totalLabels = signal<number>(0);
     totalPages = signal<number>(0);
 
@@ -88,6 +89,11 @@ export class LabelPrintingComponent implements OnInit {
     get safePreviewUrl(): SafeResourceUrl | null {
         const url = this.previewUrl();
         return url ? this.sanitizer.bypassSecurityTrustResourceUrl(url) : null;
+    }
+
+    get safePreviewHtml(): SafeHtml | null {
+        const html = this.previewHtml();
+        return html ? this.sanitizer.bypassSecurityTrustHtml(html) : null;
     }
 
     ngOnInit(): void {
@@ -308,14 +314,14 @@ export class LabelPrintingComponent implements OnInit {
 
     async generatePreview(): Promise<void> {
         console.log('generatePreview called');
-        
+
         if (this.selectedProducts().length === 0) {
             console.warn('No products selected');
             alert('Please select at least one product');
             return;
         }
 
-        console.log('Setting isGenerating to true');
+        console.log('Generating HTML preview (fast)');
         this.isGenerating.set(true);
 
         const printJob: PrintJob = {
@@ -325,49 +331,106 @@ export class LabelPrintingComponent implements OnInit {
             totalPages: this.totalPages()
         };
 
-        console.log('PrintJob:', printJob);
+        try {
+            // Generate HTML preview with actual barcode images
+            console.log('Calling labelService.generateHTMLPreview...');
+            const htmlPreview = await this.labelService.generateHTMLPreview(printJob);
+            console.log('HTML preview returned, length:', htmlPreview?.length || 0);
+            this.previewHtml.set(htmlPreview);
+            console.log('HTML preview set, signal value:', this.previewHtml());
+        } catch (error) {
+            console.error('Error generating preview:', error);
+            alert(`Failed to generate preview: ${error}`);
+        } finally {
+            this.isGenerating.set(false);
+        }
+    }
+
+    async downloadPDF(): Promise<void> {
+        if (this.selectedProducts().length === 0) {
+            alert('No labels to download');
+            return;
+        }
+
+        console.log('Downloading PDF...');
+        this.isGenerating.set(true);
+
+        const printJob: PrintJob = {
+            products: this.selectedProducts(),
+            configuration: this.currentConfiguration(),
+            totalLabels: this.totalLabels(),
+            totalPages: this.totalPages()
+        };
 
         try {
-            console.log('Calling labelService.generatePDF...');
+            console.log('Generating PDF for download...');
+            console.log('Download job details:', {
+                productCount: printJob.products.length,
+                totalLabels: printJob.totalLabels,
+                barcodeEnabled: printJob.configuration.template.showCode
+            });
+
             const result = await this.labelService.generatePDF(printJob);
-            console.log('PDF Generation result:', result);
+            console.log('PDF generation result:', result);
 
             if (result.success && result.pdfBlob) {
-                this.pdfBlob.set(result.pdfBlob);
-
-                // Create preview URL
-                if (this.previewUrl()) {
-                    URL.revokeObjectURL(this.previewUrl()!);
-                }
-                const url = URL.createObjectURL(result.pdfBlob);
-                this.previewUrl.set(url);
-                console.log('Preview URL set:', url);
+                console.log('PDF blob size:', result.pdfBlob.size, 'bytes');
+                const filename = `labels_${new Date().getTime()}.pdf`;
+                this.labelService.downloadPDF(result.pdfBlob, filename);
+                console.log('PDF download initiated:', filename);
             } else {
                 console.error('PDF generation failed:', result.message);
                 alert(result.message || 'Failed to generate PDF');
             }
         } catch (error) {
-            console.error('Error generating preview:', error);
-            alert(`Failed to generate preview: ${error}`);
+            console.error('Error generating PDF for download:', error);
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            alert(`Failed to generate PDF: ${errorMessage}`);
         } finally {
-            console.log('Setting isGenerating to false');
             this.isGenerating.set(false);
         }
     }
 
-    downloadPDF(): void {
-        const blob = this.pdfBlob();
-        if (blob) {
-            const filename = `labels_${new Date().getTime()}.pdf`;
-            this.labelService.downloadPDF(blob, filename);
+    async printLabels(): Promise<void> {
+        if (this.selectedProducts().length === 0) {
+            alert('No labels to print');
+            return;
         }
-    }
 
-    printLabels(): void {
-        const blob = this.pdfBlob();
-        if (blob) {
-            this.isPrinting.set(true);
-            this.labelService.printPDF(blob);
+        console.log('Printing labels...');
+        this.isPrinting.set(true);
+
+        const printJob: PrintJob = {
+            products: this.selectedProducts(),
+            configuration: this.currentConfiguration(),
+            totalLabels: this.totalLabels(),
+            totalPages: this.totalPages()
+        };
+
+        try {
+            console.log('Generating PDF for printing...');
+            console.log('Print job details:', {
+                productCount: printJob.products.length,
+                totalLabels: printJob.totalLabels,
+                barcodeEnabled: printJob.configuration.template.showCode
+            });
+
+            const result = await this.labelService.generatePDF(printJob);
+            console.log('PDF generation result:', result);
+
+            if (result.success && result.pdfBlob) {
+                console.log('PDF blob size:', result.pdfBlob.size, 'bytes');
+                this.labelService.printPDF(result.pdfBlob);
+                console.log('Print dialog should be opening...');
+            } else {
+                console.error('PDF generation failed:', result.message);
+                alert(result.message || 'Failed to generate PDF for printing');
+            }
+        } catch (error) {
+            console.error('Error generating PDF for printing:', error);
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            alert(`Failed to print: ${errorMessage}`);
+        } finally {
             setTimeout(() => this.isPrinting.set(false), 2000);
         }
     }
