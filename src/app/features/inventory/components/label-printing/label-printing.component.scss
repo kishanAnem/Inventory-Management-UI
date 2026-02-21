@@ -662,6 +662,13 @@
         border: none;
       }
     }
+
+    .html-preview {
+      flex: 1;
+      background: white;
+      overflow: auto;
+      padding: 20px;
+    }
   }
 
   .no-preview {

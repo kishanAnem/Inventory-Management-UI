@@ -1,4 +1,5 @@
 export type PaperSize = 'A4' | 'Letter' | 'Custom';
+export type PageOrientation = 'portrait' | 'landscape';
 export type BarcodeType = 'CODE128' | 'QR';
 export type FontFamily = 'Roboto';
 export type FontWeight = 'normal' | 'bold';
@@ -10,6 +11,7 @@ export interface LabelConfiguration {
 
     // Paper Settings
     paperSize: PaperSize;
+    pageOrientation: PageOrientation;
     pageWidth: number;      // in mm
     pageHeight: number;     // in mm
 
@@ -74,6 +76,7 @@ export const LABEL_PRESETS: LabelPreset[] = [
         description: '21 labels per page (63.5×38.1mm) - Address labels',
         configuration: {
             paperSize: 'A4',
+            pageOrientation: 'portrait',
             pageWidth: 210,
             pageHeight: 297,
             labelWidth: 63.5,
@@ -108,6 +111,7 @@ export const LABEL_PRESETS: LabelPreset[] = [
         description: '14 labels per page (99.1×38.1mm) - Shipping labels',
         configuration: {
             paperSize: 'A4',
+            pageOrientation: 'portrait',
             pageWidth: 210,
             pageHeight: 297,
             labelWidth: 99.1,
@@ -142,6 +146,7 @@ export const LABEL_PRESETS: LabelPreset[] = [
         description: '189 labels per page (25.4×10mm) - Small product labels',
         configuration: {
             paperSize: 'A4',
+            pageOrientation: 'portrait',
             pageWidth: 210,
             pageHeight: 297,
             labelWidth: 25.4,
@@ -176,6 +181,7 @@ export const LABEL_PRESETS: LabelPreset[] = [
         description: '24 labels per page (52×29mm) - Price tags',
         configuration: {
             paperSize: 'A4',
+            pageOrientation: 'portrait',
             pageWidth: 210,
             pageHeight: 297,
             labelWidth: 52,

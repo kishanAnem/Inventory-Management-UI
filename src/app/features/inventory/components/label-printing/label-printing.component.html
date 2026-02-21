@@ -371,10 +371,10 @@
                 @if (isGenerating()) {
                 <div class="generating-state">
                     <mat-spinner diameter="60"></mat-spinner>
-                    <h3>Generating PDF...</h3>
+                    <h3>Generating Preview...</h3>
                     <p>Please wait while we create your labels</p>
                 </div>
-                } @else if (previewUrl()) {
+                } @else if (previewHtml()) {
                 <div class="preview-container">
                     <div class="preview-toolbar">
                         <div class="preview-info">
@@ -394,9 +394,7 @@
                         </div>
                     </div>
 
-                    <div class="pdf-viewer">
-                        <iframe [src]="safePreviewUrl" frameborder="0"></iframe>
-                    </div>
+                    <div class="html-preview" [innerHTML]="safePreviewHtml"></div>
                 </div>
                 } @else {
                 <div class="no-preview">
