@@ -2,6 +2,37 @@
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.10.
 
+## Run with Docker
+
+### Build and run with Docker Compose
+
+```bash
+docker compose up --build
+```
+
+The app is available at `http://localhost:4200`.
+
+By default on local machines, Docker Compose automatically loads `docker-compose.override.yml`, which sets `APP_ENV=development`.
+
+To build using a specific environment file mapping (`.env.development`, `.env.staging`, `.env.production`) via `scripts/set-env.js`, pass `APP_ENV`:
+
+```bash
+APP_ENV=staging docker compose up --build
+```
+
+PowerShell (Windows):
+
+```powershell
+$env:APP_ENV='staging'; docker compose up --build
+```
+
+### Build and run with Docker directly
+
+```bash
+docker build -t inventory-management-ui --build-arg APP_ENV=production .
+docker run --rm -p 4200:80 inventory-management-ui
+```
+
 ## Development server
 
 To start a local development server, run:
