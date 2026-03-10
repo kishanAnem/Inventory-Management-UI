@@ -54,8 +54,9 @@
     <p>{{ getErrorMessage() }}</p>
   </div>
 
+  @if (filteredItems().length) {
   <!-- Products Table -->
-  <div *ngIf="filteredItems().length" class="table-container">
+  <div class="table-container">
     <div class="table-wrapper">
       <table class="product-table">
         <thead>
@@ -106,7 +107,7 @@
     <!-- Pagination Component -->
   </div>
   <app-pagination [config]="paginationConfig" (pageChange)="onPageChange($event)"></app-pagination>
-
+  }
   <!-- Empty State -->
   <div *ngIf="!loading() && !filteredItems().length && !error()" class="retail-pro-empty">
     <div class="retail-pro-empty__icon">
