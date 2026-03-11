@@ -19,12 +19,13 @@
                 <label for="categoryId" class="form-label">
                     Category <span class="required">*</span>
                 </label>
-                <mat-select id="categoryId" formControlName="categoryId" class="form-select"
-                    placeholder="Select a category" [class.error]="hasFieldError('categoryId')">
-                    <mat-option *ngFor="let category of categories" [value]="category.id">
+                <select id="categoryId" formControlName="categoryId" class="form-select"
+                    [class.error]="hasFieldError('categoryId')">
+                    <option [ngValue]="null" disabled>Select a category</option>
+                    <option *ngFor="let category of categories" [ngValue]="category.id">
                         {{ category.name }}
-                    </mat-option>
-                </mat-select>
+                    </option>
+                </select>
                 <span *ngIf="hasFieldError('categoryId')" class="error-message">
                     {{ getFieldError('categoryId') }}
                 </span>

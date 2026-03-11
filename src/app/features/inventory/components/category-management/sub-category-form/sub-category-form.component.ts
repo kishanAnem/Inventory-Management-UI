@@ -5,7 +5,6 @@ import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/materia
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSelectModule } from '@angular/material/select';
 import { CategoryService } from '../../../services/category.service';
 
 @Component({
@@ -17,8 +16,7 @@ import { CategoryService } from '../../../services/category.service';
         MatDialogModule,
         MatButtonModule,
         MatIconModule,
-        MatProgressSpinnerModule,
-        MatSelectModule
+        MatProgressSpinnerModule
     ],
     templateUrl: './sub-category-form.component.html',
     styleUrls: ['./sub-category-form.component.scss']
@@ -42,7 +40,7 @@ export class SubCategoryFormComponent implements OnInit {
 
     ngOnInit(): void {
         this.subCategoryForm = this.fb.group({
-            categoryId: [this.data?.subCategory?.categoryId || '', [Validators.required]],
+            categoryId: [this.data?.subCategory?.categoryId ?? null, [Validators.required]],
             name: [this.data?.subCategory?.name || '', [Validators.required, Validators.minLength(2)]],
             description: [this.data?.subCategory?.description || ''],
             isActive: [this.data?.subCategory?.isActive ?? true]
